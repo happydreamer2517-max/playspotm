@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QMS — 로그인</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- 로딩 오버레이 -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">확인 중...</div>
+</div>
+
+<!-- 로그인 페이지 -->
+<div class="login-page">
+  <div class="login-grid">
+
+    <!-- 왼쪽: 브랜드 -->
+    <div class="login-left">
+      <div class="login-logo">
+        <div class="login-logo-icon">QMS</div>
+        <div>
+          <div class="login-logo-text">운영 관리 시스템</div>
+          <div class="login-logo-sub">ISO 9001:2015 기반</div>
+        </div>
+      </div>
+      <div class="login-tagline">
+        체계적인<br>현장 운영을 위한<br><span>통합 플랫폼</span>
+      </div>
+      <div class="login-desc">
+        전국 업체 현황, 기기 관리, 물류, 영업까지<br>하나의 시스템에서 관리하세요.
+      </div>
+      <div class="login-features">
+        <div class="login-feat"><div class="login-feat-dot"></div>직급·부서별 권한 관리</div>
+        <div class="login-feat"><div class="login-feat-dot"></div>전국 업체 현황 실시간 모니터링</div>
+        <div class="login-feat"><div class="login-feat-dot"></div>물류 입출고·재고 관리</div>
+        <div class="login-feat"><div class="login-feat-dot"></div>MID·업체 영업 관리</div>
+      </div>
+    </div>
+
+    <!-- 오른쪽: 로그인 폼 -->
+    <div class="login-right">
+      <div class="login-form-title">로그인</div>
+      <div class="login-form-sub">계정 정보를 입력하세요</div>
+
+      <div id="login-error" class="login-error"></div>
+
+      <div class="form-field">
+        <label class="form-label">아이디</label>
+        <input class="form-input" type="text" id="login-id"
+               placeholder="아이디 입력" autocomplete="username">
+      </div>
+
+      <div class="form-field">
+        <label class="form-label">비밀번호</label>
+        <div class="input-wrap">
+          <input class="form-input" type="password" id="login-pw"
+                 placeholder="비밀번호 입력" autocomplete="current-password">
+          <button class="input-toggle" id="pw-toggle"
+                  onclick="UI.togglePw('login-pw', this)" type="button">👁</button>
+        </div>
+      </div>
+
+      <button class="btn-login" id="login-btn" onclick="Auth.doLogin()">로그인</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- 토스트 -->
+<div class="toast" id="toast"></div>
+
+<!-- JS 로드 순서 중요 -->
+<script src="js/config.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  /* 이미 로그인 상태면 앱으로 바로 이동 */
+  window.addEventListener('DOMContentLoaded', () => {
+    if (Auth.getSession()) {
+      window.location.href = 'app.html';
+    }
+  });
+
+  /* 키보드 Enter 지원 */
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    if (document.activeElement?.id === 'login-id') {
+      document.getElementById('login-pw').focus();
+    } else {
+      Auth.doLogin();
+    }
+  });
+</script>
+</body>
+</html>
