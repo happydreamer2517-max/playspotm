@@ -285,12 +285,6 @@
 
       </div><!-- /lgs-pages -->
 
-      <!-- 물류 로딩 오버레이 -->
-      <div id="lgs-ov" style="display:none;position:fixed;inset:0;background:rgba(241,245,249,.85);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
-        <div class="spinner"></div>
-        <div style="font-size:12px;color:var(--text3);" id="lgs-ov-txt">처리 중...</div>
-      </div>
-
     </div><!-- /view-logistics -->
 
     <!-- ── 영업 관리 (placeholder) ── -->
@@ -611,6 +605,12 @@
       <button class="btn btn-danger" onclick="Users.confirmDelete()">삭제</button>
     </div>
   </div>
+</div>
+
+<!-- 물류 로딩 오버레이 (전역) -->
+<div id="lgs-ov" style="display:none;position:fixed;inset:0;background:rgba(241,245,249,.85);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
+  <div class="spinner"></div>
+  <div style="font-size:12px;color:var(--text3);" id="lgs-ov-txt">처리 중...</div>
 </div>
 
 <!-- 토스트 -->
