@@ -819,3 +819,17 @@ tbody tr:hover td { background: var(--bg); }
 /* 물류 오버레이 */
 .lgs-overlay-hidden { display: none !important; }
 .lgs-overlay-show   { display: flex !important; }
+
+/* ══ 영업 관리 탭 ══ */
+.sales-tab-btn {
+  padding: 7px 14px; border-radius: 7px;
+  font-size: 12px; font-weight: 600;
+  cursor: pointer; border: none;
+  background: transparent; color: var(--text3);
+  transition: all .15s; font-family: inherit;
+}
+.sales-tab-btn:hover  { color: var(--text); }
+.sales-tab-btn.active { background: var(--surface); color: var(--blue); box-shadow: var(--shadow); }
+
+/* 선택된 행 하이라이트 */
+tbody tr.sel td { background: var(--blue-lt) !important; color: var(--blue); }
