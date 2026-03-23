@@ -181,12 +181,12 @@ let lgsInitDone = false;
 function showLgsOv(t) {
   const el = document.getElementById('lgs-ov');
   const tx = document.getElementById('lgs-ov-txt');
-  if (el) { el.classList.remove('lgs-overlay-hidden'); el.classList.add('lgs-overlay-show'); }
+  if (el) el.style.display = 'flex';
   if (tx && t) tx.textContent = t;
 }
 function hideLgsOv() {
   const el = document.getElementById('lgs-ov');
-  if (el) { el.classList.remove('lgs-overlay-show'); el.classList.add('lgs-overlay-hidden'); }
+  if (el) el.style.display = 'none';
 }
 
 function lgsApi(action, params = {}) {
