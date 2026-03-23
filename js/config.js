@@ -35,10 +35,41 @@ const PAGES = [
   { key: 'perms',     label: '권한 설정' },
 ];
 
-/* 기본 권한 (로컬 fallback) */
+/* ── 권한 레벨 ──
+   'none' = 접근 불가
+   'view' = 열람만 가능
+   'edit' = 수정 가능 (열람 포함)
+*/
+const PERM_LEVELS = ['none', 'view', 'edit'];
+
+const PERM_LABEL = {
+  none: { text: '없음', icon: '✕', cls: 'pl-none' },
+  view: { text: '열람', icon: '👁', cls: 'pl-view' },
+  edit: { text: '수정', icon: '✏️', cls: 'pl-edit' },
+};
+
+/* 기본 권한 */
 const DEFAULT_PERMS = {
-  admin:   { home:1, logistics:1, sales:1, machine:1, users:1, perms:1 },
-  manager: { home:1, logistics:1, sales:1, machine:1, users:0, perms:0 },
-  staff:   { home:1, logistics:1, sales:0, machine:0, users:0, perms:0 },
-  viewer:  { home:1, logistics:0, sales:0, machine:0, users:0, perms:0 },
+  admin:   { home:'edit', logistics:'edit', sales:'edit', machine:'edit', users:'edit', perms:'edit' },
+  manager: { home:'edit', logistics:'edit', sales:'edit', machine:'edit', users:'view', perms:'none' },
+  staff:   { home:'view', logistics:'view', sales:'view', machine:'view', users:'none', perms:'none' },
+  viewer:  { home:'view', logistics:'view', sales:'none', machine:'none', users:'none', perms:'none' },
+};
+
+/* 권한 헬퍼 */
+const Perm = {
+  _get() {
+    const raw = localStorage.getItem(CONFIG.PERM_KEY);
+    return raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(DEFAULT_PERMS));
+  },
+  level(role, page) {
+    return this._get()[role]?.[page] || 'none';
+  },
+  canView(role, page) {
+    const lv = this.level(role, page);
+    return lv === 'view' || lv === 'edit';
+  },
+  canEdit(role, page) {
+    return this.level(role, page) === 'edit';
+  },
 };
