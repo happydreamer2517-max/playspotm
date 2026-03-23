@@ -4,7 +4,7 @@
 ══════════════════════════════════ */
 
 const CONFIG = {
-  GAS_URL: 'https://script.google.com/macros/s/AKfycbwkopYMM4slKoYnup5oYo6B2QZxJfkImjvRJAaMhpNok9Pn5aSYmHpx_MpmXw5sK1QdDg/exec',
+  GAS_URL: 'https://script.google.com/macros/s/AKfycbyAaQZ7QsllWc_S6XRsfk9kkhFyaqqsG56_u9cYqHkYhGcznqb3JzXsfxLbzMGzMbVnDA/exec',
   SESSION_KEY: 'qms_session',
   PERM_KEY: 'qms_perms',
 };
