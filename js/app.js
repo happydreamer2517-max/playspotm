@@ -40,17 +40,25 @@ const App = {
       this._showDenied(user.role); return;
     }
 
-    // 물류 오버레이 숨김
+    // 물류 오버레이 강제 숨김
     const ov = document.getElementById('lgs-ov');
     if (ov) ov.style.display = 'none';
 
     // denied 제거
     document.getElementById('view-denied-tmp')?.remove();
 
-    // 페이지 전환
-    document.querySelectorAll('.page-view').forEach(v => v.classList.remove('active'));
+    // 모든 페이지 숨기기 (CSS + 인라인 스타일 동시)
+    document.querySelectorAll('.page-view').forEach(v => {
+      v.classList.remove('active');
+      v.style.display = 'none';
+    });
+
+    // 선택 페이지 표시 (인라인 스타일로 강제)
     const view = document.getElementById('view-'+page);
-    if (view) view.classList.add('active');
+    if (view) {
+      view.classList.add('active');
+      view.style.display = 'block';
+    }
 
     // 네비 전환
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
