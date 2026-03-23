@@ -69,7 +69,6 @@ const App = {
     if (page === 'logistics') lgsInit();
     if (page === 'users')     Users.load();
     if (page === 'perms')     Perms.render();
-    if (page === 'profile')   App.renderProfile();
   },
 
   _showDenied(role) {
@@ -80,56 +79,6 @@ const App = {
     div.id = 'view-denied-tmp';
     div.innerHTML = `<div class="access-icon">🚫</div><div class="access-text">접근 권한이 없습니다</div><div class="access-sub"><strong>${ROLES[role]?.label||role}</strong> 역할은 이 페이지에 접근할 수 없습니다.</div>`;
     document.querySelector('.main-content').appendChild(div);
-  },
-
-  renderProfile() {
-    const user = Auth.currentUser || Auth.getSession();
-    if (!user) return;
-    Auth.currentUser = user;
-
-    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v||'—'; };
-    const av = document.getElementById('profile-avatar');
-    if (av) { av.textContent=(user.name||'?')[0]; av.className='avatar '+(ROLES[user.role]?.avCls||'av-staff'); av.style.cssText='width:36px;height:36px;font-size:14px;'; }
-    set('profile-name-display', user.name);
-    set('profile-role-display', (user.dept||'')+' · '+(ROLES[user.role]?.label||user.role));
-    set('p-name',  user.name);
-    set('p-id',    user.userId);
-    set('p-rank',  user.rank);
-    set('p-dept',  user.dept);
-
-    // 내 페이지 접근 권한
-    const container = document.getElementById('my-page-perms');
-    if (container) {
-      container.innerHTML = USER_PERM_PAGES.map(pg => {
-        const lv = Perm.level(user.role, pg.key, user);
-        const meta = PERM_LABEL[lv];
-        return `<div style="display:flex;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
-          <span style="flex:1;color:var(--text2);">${pg.label}</span>
-          <span class="perm-level-btn ${meta.cls}" style="cursor:default;pointer-events:none;">
-            <span class="perm-level-icon">${meta.icon}</span>
-            <span class="perm-level-text">${meta.text}</span>
-          </span>
-        </div>`;
-      }).join('');
-    }
-  },
-
-  async changePassword() {
-    const cur=document.getElementById('pw-cur').value, nw=document.getElementById('pw-new').value, cfm=document.getElementById('pw-confirm').value;
-    if (!cur||!nw||!cfm) { UI.showToast('모든 항목을 입력하세요.'); return; }
-    if (nw.length<6)      { UI.showToast('새 비밀번호는 6자 이상이어야 합니다.'); return; }
-    if (nw!==cfm)         { UI.showToast('새 비밀번호가 일치하지 않습니다.'); return; }
-    UI.showLoading('비밀번호 변경 중...');
-    try {
-      const res = await API.updateUser({ id: Auth.currentUser.id, pw: nw });
-      UI.hideLoading();
-      if (res.success) {
-        Auth.currentUser.pw = nw; Auth.setSession(Auth.currentUser);
-        ['pw-cur','pw-new','pw-confirm'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
-        const sf=document.getElementById('strength-fill'); if(sf) sf.style.width='0%';
-        UI.showToast('✅ 비밀번호가 변경되었습니다.');
-      } else { UI.showToast('❌ '+(res.message||'변경 실패')); }
-    } catch(e) { UI.hideLoading(); UI.showToast('❌ 오류가 발생했습니다.'); }
   },
 };
 
