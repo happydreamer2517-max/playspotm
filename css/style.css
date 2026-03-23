@@ -604,7 +604,7 @@ tbody tr:hover td { background: var(--bg); }
 ══════════════════════════════════ */
 .perm-grid {
   display: grid;
-  grid-template-columns: 180px repeat(4,1fr);
+  grid-template-columns: 180px repeat(2,1fr);
   border: 1px solid var(--border); border-radius: var(--r-lg);
   overflow: hidden; background: var(--surface); box-shadow: var(--shadow);
 }
@@ -614,7 +614,7 @@ tbody tr:hover td { background: var(--bg); }
   border-right: 1px solid var(--border);
   font-size: 12px; display: flex; align-items: center; justify-content: center;
 }
-.perm-cell:nth-child(5n) { border-right: none; }
+.perm-cell:nth-child(3n) { border-right: none; }
 .perm-cell.row-label { justify-content: flex-start; font-weight: 600; color: var(--text2); background: #fafbfc; }
 .perm-cell.col-header {
   font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
