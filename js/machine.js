@@ -37,9 +37,10 @@ function machineTab(tab) {
   document.querySelector(`.machine-tab-btn[data-tab="${tab}"]`)?.classList.add('active');
   const pane = document.getElementById('machine-pane-' + tab);
   if (pane) pane.style.display = 'block';
-  if (tab === 'request') machineLoadList();
-  if (tab === 'new')     machineLoadModels();
-  if (tab === 'stock')   machineLoadStock();
+  if (tab === 'request')  machineLoadList();
+  if (tab === 'new')      machineLoadModels();
+  if (tab === 'incoming') { machineLoadInModels(); machineLoadIncoming(); }
+  if (tab === 'stock')    machineLoadStock();
 }
 
 async function machineInit() {
@@ -243,6 +244,102 @@ async function stockSave() {
     if (res.success) machineLoadStock();
   } catch(e) { UI.showToast('❌ 저장 실패'); }
   finally { machineOv(false); }
+}
+
+
+/* ══════════════════════════════════
+   입고 등록
+══════════════════════════════════ */
+let incomingList = [];
+
+/* 입고 탭 모델 select 채우기 */
+async function machineLoadInModels() {
+  try {
+    if (!stockList.length) {
+      const res = await machineApi('getMachineStock', {});
+      stockList = res.data || [];
+    }
+    const sel = document.getElementById('in-model');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">-- 모델 선택 --</option>';
+    stockList.forEach(r => {
+      const o = document.createElement('option');
+      o.value = r['모델명'];
+      o.textContent = `${r['모델명']} (현재 재고: ${Number(r['재고수량']||0)}대)`;
+      sel.appendChild(o);
+    });
+    // 입고일 오늘로 초기화
+    const dateEl = document.getElementById('in-date');
+    if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().split('T')[0];
+  } catch(e) {}
+}
+
+/* 최근 입고 내역 조회 */
+async function machineLoadIncoming() {
+  try {
+    machineOv(true, '입고 내역 로딩 중...');
+    const res = await machineApi('getMachineIncoming', {});
+    incomingList = res.data || [];
+    renderIncomingTable(incomingList);
+  } catch(e) { UI.showToast('❌ 입고 내역 로드 실패'); }
+  finally { machineOv(false); }
+}
+
+function renderIncomingTable(list) {
+  const tb = document.getElementById('incoming-tb');
+  if (!tb) return;
+  // 최근 20건만 표시
+  const recent = [...list].reverse().slice(0, 20);
+  tb.innerHTML = recent.length ? recent.map(r => `
+    <tr>
+      <td class="td-muted">${r['입고일자']||'-'}</td>
+      <td class="td-left td-bold">${r['모델명']||'-'}</td>
+      <td class="td-right" style="color:var(--success);font-weight:700;">+${Number(r['입고수량']||0).toLocaleString()}</td>
+      <td class="td-right td-muted">${Number(r['단가']||0).toLocaleString()}</td>
+      <td>${r['공급업체']||'-'}</td>
+      <td class="td-muted">${r['등록자']||'-'}</td>
+    </tr>`).join('')
+    : '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text3);">입고 내역 없음</td></tr>';
+}
+
+/* 입고 등록 저장 */
+async function machineSubmitIn() {
+  const params = {
+    '입고일자':  document.getElementById('in-date')?.value   || '',
+    '모델명':    document.getElementById('in-model')?.value  || '',
+    '입고수량':  document.getElementById('in-qty')?.value    || '0',
+    '단가':      document.getElementById('in-price')?.value  || '0',
+    '공급업체':  document.getElementById('in-vendor')?.value.trim() || '',
+    '비고':      document.getElementById('in-note')?.value.trim()   || '',
+    '등록자':    Auth.currentUser?.name || '',
+  };
+
+  if (!params['입고일자']) { UI.showToast('입고일자를 입력하세요'); return; }
+  if (!params['모델명'])   { UI.showToast('모델명을 선택하세요'); return; }
+  if (Number(params['입고수량']) <= 0) { UI.showToast('입고 수량을 입력하세요'); return; }
+
+  try {
+    machineOv(true, '입고 등록 중...');
+    const res = await machineApi('saveMachineIncoming', params);
+    if (res.success) {
+      UI.showToast('✅ ' + res.message);
+      machineInClear();
+      // 재고 목록 리셋 후 다시 로드
+      stockList = [];
+      machineLoadInModels();
+      machineLoadIncoming();
+    } else {
+      UI.showToast('❌ ' + res.message);
+    }
+  } catch(e) { UI.showToast('❌ 입고 등록 실패: ' + e.message); }
+  finally { machineOv(false); }
+}
+
+function machineInClear() {
+  ['in-vendor','in-note'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  const qty   = document.getElementById('in-qty');   if(qty)   qty.value = 1;
+  const price = document.getElementById('in-price'); if(price) price.value = 0;
+  const mdl   = document.getElementById('in-model'); if(mdl)   mdl.value = '';
 }
 
 /* ── 엑셀 다운로드 ── */
