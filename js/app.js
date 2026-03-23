@@ -196,12 +196,12 @@ function lgsApi(action, params = {}) {
 function lgsShowOv(t='처리 중...') {
   const el = document.getElementById('lgs-ov');
   const tx = document.getElementById('lgs-ov-txt');
-  if (el) { el.style.display = 'flex'; }
+  if (el) { el.classList.remove('lgs-overlay-hidden'); el.classList.add('lgs-overlay-show'); }
   if (tx) tx.textContent = t;
 }
 function lgsHideOv() {
   const el = document.getElementById('lgs-ov');
-  if (el) el.style.display = 'none';
+  if (el) { el.classList.remove('lgs-overlay-show'); el.classList.add('lgs-overlay-hidden'); }
 }
 
 /* fmt */
