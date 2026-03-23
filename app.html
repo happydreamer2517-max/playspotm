@@ -32,7 +32,7 @@
   </div>
 
   <!-- 유저 정보 -->
-  <div class="header-user-pill" onclick="App.navTo('profile')" style="margin-left:16px;">
+  <div class="header-user-pill" style="margin-left:16px;">
     <div class="avatar" id="hdr-avatar"></div>
     <div>
       <div class="header-user-name" id="hdr-name">—</div>
@@ -72,9 +72,7 @@
     <div class="nav-item" id="nav-perms" onclick="App.navTo('perms')">
       <span class="nav-icon">🔐</span> 권한 설정
     </div>
-    <div class="nav-item" id="nav-profile" onclick="App.navTo('profile')">
-      <span class="nav-icon">👤</span> 내 계정
-    </div>
+
   </aside>
 
   <!-- 메인 콘텐츠 -->
@@ -404,79 +402,6 @@
           </div>
         </div>
       </div>
-
-    <!-- ── 내 계정 ── -->
-    <div class="page-view" id="view-profile">
-      <div class="page-hd">
-        <div class="page-hd-text">
-          <div class="page-title">내 계정</div>
-          <div class="page-sub">개인 정보 및 비밀번호 변경</div>
-        </div>
-      </div>
-      <div class="card" style="max-width:520px;">
-        <div class="card-header">
-          <div class="avatar" id="profile-avatar" style="width:36px;height:36px;font-size:14px;"></div>
-          <div style="margin-left:10px;">
-            <div class="card-title" id="profile-name-display">—</div>
-            <div style="font-size:11px;color:var(--text3);" id="profile-role-display">—</div>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="field-row" style="margin-bottom:14px;">
-            <div class="field">
-              <div class="field-label">이름</div>
-              <div style="font-size:13px;font-weight:600;" id="p-name">—</div>
-            </div>
-            <div class="field">
-              <div class="field-label">아이디</div>
-              <div style="font-size:13px;font-family:monospace;" id="p-id">—</div>
-            </div>
-          </div>
-          <div class="field-row" style="margin-bottom:14px;">
-            <div class="field">
-              <div class="field-label">직급</div>
-              <div style="font-size:13px;" id="p-rank">—</div>
-            </div>
-            <div class="field">
-              <div class="field-label">부서</div>
-              <div style="font-size:13px;" id="p-dept">—</div>
-            </div>
-          </div>
-          <hr style="border:none;border-top:1px solid var(--border);margin:18px 0;">
-          <div style="font-size:13px;font-weight:700;margin-bottom:14px;">비밀번호 변경</div>
-          <div class="field">
-            <label class="field-label">현재 비밀번호</label>
-            <div class="pw-wrap">
-              <input class="field-input" type="password" id="pw-cur" placeholder="현재 비밀번호">
-              <button class="pw-eye" onclick="UI.togglePw('pw-cur',this)" type="button">👁</button>
-            </div>
-          </div>
-          <div class="field">
-            <label class="field-label">새 비밀번호</label>
-            <div class="pw-wrap">
-              <input class="field-input" type="password" id="pw-new"
-                     placeholder="8자 이상, 영문+숫자 조합"
-                     oninput="UI.checkStrength(this.value,'strength-fill','strength-text')">
-              <button class="pw-eye" onclick="UI.togglePw('pw-new',this)" type="button">👁</button>
-            </div>
-            <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
-            <div class="field-hint" id="strength-text">비밀번호를 입력하면 강도가 표시됩니다</div>
-          </div>
-          <div class="field">
-            <label class="field-label">새 비밀번호 확인</label>
-            <div class="pw-wrap">
-              <input class="field-input" type="password" id="pw-confirm" placeholder="비밀번호 재입력">
-              <button class="pw-eye" onclick="UI.togglePw('pw-confirm',this)" type="button">👁</button>
-            </div>
-          </div>
-          <button class="btn btn-primary" onclick="App.changePassword()">비밀번호 변경</button>
-
-            <hr style="border:none;border-top:1px solid var(--border);margin:18px 0;">
-            <div style="font-size:13px;font-weight:700;margin-bottom:8px;">내 페이지 접근 권한</div>
-            <div id="my-page-perms"></div>
-        </div>
-      </div>
-    </div>
 
   </div><!-- /main-content -->
 </div><!-- /app-body -->
