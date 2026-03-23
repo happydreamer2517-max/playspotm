@@ -289,15 +289,20 @@
     <!-- ════ 영업 관리 ════ -->
     <div class="page-view" id="view-sales">
       <!-- 탭 네비 -->
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
-        <h2 style="font-size:15px;font-weight:700;margin:0;">🏪 영업 관리</h2>
-        <div style="margin-left:auto;display:flex;gap:4px;background:var(--bg2);padding:4px;border-radius:10px;">
-          <button class="sales-tab-btn active" data-tab="biz"      onclick="salesTab('biz')">사업자</button>
-          <button class="sales-tab-btn"        data-tab="branch"   onclick="salesTab('branch')">지점</button>
-          <button class="sales-tab-btn"        data-tab="mid"      onclick="salesTab('mid')">MID 코드</button>
-          <button class="sales-tab-btn"        data-tab="cat"      onclick="salesTab('cat')">CAT 단말기</button>
-          <button class="sales-tab-btn"        data-tab="approval" onclick="salesTab('approval')">승인 내역</button>
+      <!-- 헤더 -->
+      <div style="display:flex;align-items:center;margin-bottom:4px;">
+        <div>
+          <div class="page-title">🏪 영업 관리</div>
+          <div class="page-sub">사업자 · 지점 · MID · CAT 단말기 · 승인 내역</div>
         </div>
+      </div>
+      <!-- 탭 -->
+      <div class="sales-tab-nav">
+        <button class="sales-tab-btn active" data-tab="biz"      onclick="salesTab('biz')">🏢 사업자</button>
+        <button class="sales-tab-btn"        data-tab="branch"   onclick="salesTab('branch')">📍 지점</button>
+        <button class="sales-tab-btn"        data-tab="mid"      onclick="salesTab('mid')">🔑 MID 코드</button>
+        <button class="sales-tab-btn"        data-tab="cat"      onclick="salesTab('cat')">📟 CAT 단말기</button>
+        <button class="sales-tab-btn"        data-tab="approval" onclick="salesTab('approval')">✅ 승인 내역</button>
       </div>
 
       <!-- ── 사업자 관리 ── -->
