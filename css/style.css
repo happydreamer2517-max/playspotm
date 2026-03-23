@@ -731,3 +731,87 @@ tbody tr:hover td { background: var(--bg); }
 }
 .perm-level-icon { font-size: 13px; }
 .perm-level-text { font-size: 11px; }
+
+/* ══════════════════════════════════
+   사용자별 페이지 권한 패널
+══════════════════════════════════ */
+.user-perm-panel {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 4px 12px;
+  margin-top: 6px;
+}
+
+.user-perm-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+.user-perm-row:last-child { border-bottom: none; }
+
+.user-perm-label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.user-perm-label > span:first-child {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.user-perm-role-default {
+  font-size: 10px;
+  color: var(--text3);
+}
+
+.user-perm-btns {
+  display: flex;
+  gap: 4px;
+}
+
+/* 권한 선택 버튼 */
+.uperm-btn {
+  padding: 4px 9px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid var(--border2);
+  background: var(--surface);
+  color: var(--text3);
+  transition: all .15s;
+  font-family: inherit;
+}
+.uperm-btn:hover { border-color: var(--blue); color: var(--blue); }
+
+/* 역할 따름 */
+.uperm-btn.selected {
+  background: var(--text);
+  color: #fff;
+  border-color: var(--text);
+}
+/* none 선택됨 */
+.uperm-btn.uperm-none.selected {
+  background: var(--bg2);
+  color: var(--text2);
+  border-color: var(--border2);
+}
+/* view 선택됨 */
+.uperm-btn.uperm-view.selected {
+  background: var(--blue-lt);
+  color: var(--blue);
+  border-color: #bfdbfe;
+}
+/* edit 선택됨 */
+.uperm-btn.uperm-edit.selected {
+  background: var(--success-lt);
+  color: var(--success);
+  border-color: #6ee7b7;
+}
+
+/* 내 계정 페이지 권한 표시 */
+#my-page-perms { margin-top: 8px; }
