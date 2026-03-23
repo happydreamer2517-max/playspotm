@@ -194,7 +194,7 @@ const Users = {
     document.getElementById('reset-pw-section').style.display = 'block';
     document.getElementById('f-pw-reset').value = '';
 
-    const roleKeys = ['admin','manager','staff','viewer'];
+    const roleKeys = ['admin','user'];
     document.querySelectorAll('#role-select-cards .role-card').forEach((c, i) => {
       c.classList.toggle('selected', roleKeys[i] === u.role);
     });
