@@ -8,12 +8,10 @@ const CONFIG = {
   PERM_KEY:    'qms_perms',
 };
 
-/* 역할 메타데이터 */
+/* 역할 메타데이터 — 관리자 / 사용자 2가지 */
 const ROLES = {
-  admin:   { label: '관리자', cls: 'b-admin',   avCls: 'av-admin' },
-  manager: { label: '매니저', cls: 'b-manager', avCls: 'av-manager' },
-  staff:   { label: '직원',   cls: 'b-staff',   avCls: 'av-staff' },
-  viewer:  { label: '열람자', cls: 'b-viewer',  avCls: 'av-viewer' },
+  admin: { label: '관리자', cls: 'b-admin', avCls: 'av-admin' },
+  user:  { label: '사용자', cls: 'b-staff', avCls: 'av-staff' },
 };
 
 /* 부서 배지 클래스 */
@@ -50,17 +48,18 @@ const PERM_LABEL = {
   edit: { text: '수정', icon: '✏️', cls: 'pl-edit' },
 };
 
-/* 역할별 기본 권한 (로컬 fallback) */
+/* 역할별 기본 권한
+   관리자 : 전체 접근·수정
+   사용자 : 홈만 기본, 나머지는 개인 권한으로 결정
+*/
 const DEFAULT_PERMS = {
-  admin:   { home:'edit', logistics:'edit', sales:'edit', machine:'edit', users:'edit', perms:'edit' },
-  manager: { home:'edit', logistics:'edit', sales:'edit', machine:'edit', users:'view', perms:'none' },
-  staff:   { home:'view', logistics:'view', sales:'view', machine:'view', users:'none', perms:'none' },
-  viewer:  { home:'view', logistics:'view', sales:'none', machine:'none', users:'none', perms:'none' },
+  admin: { home:'edit', logistics:'edit', sales:'edit', machine:'edit', users:'edit', perms:'edit' },
+  user:  { home:'view', logistics:'none', sales:'none', machine:'none', users:'none', perms:'none' },
 };
 
 /* ── 권한 헬퍼 ──
    우선순위: 사용자 개인 권한 > 역할 기본 권한
-   홈/사용자관리/권한설정은 항상 역할 권한만 적용
+   홈/사용자관리/권한설정은 역할 권한만 적용
 */
 const Perm = {
   _rolePerms() {
@@ -69,15 +68,11 @@ const Perm = {
   },
 
   level(role, page, user = null) {
-    // 개인 권한 적용 페이지이고, 유저 정보가 있으면 개인 권한 우선
     const userPermPage = USER_PERM_PAGES.find(p => p.key === page);
     if (userPermPage && user) {
       const userLevel = user[userPermPage.col];
-      if (userLevel && PERM_LEVELS.includes(userLevel)) {
-        return userLevel;
-      }
+      if (userLevel && PERM_LEVELS.includes(userLevel)) return userLevel;
     }
-    // 역할 기본 권한 fallback
     return this._rolePerms()[role]?.[page] || 'none';
   },
 
