@@ -252,26 +252,42 @@ async function stockSave() {
 ══════════════════════════════════ */
 let incomingList = [];
 
-/* 입고 탭 모델 select 채우기 */
+/* 입고 탭 모델 select 채우기 - 항상 새로 로드 */
 async function machineLoadInModels() {
   try {
-    if (!stockList.length) {
-      const res = await machineApi('getMachineStock', {});
-      stockList = res.data || [];
-    }
+    // 항상 최신 재고로 새로 로드
+    const res = await machineApi('getMachineStock', {});
+    stockList = res.data || [];
+
     const sel = document.getElementById('in-model');
     if (!sel) return;
     sel.innerHTML = '<option value="">-- 모델 선택 --</option>';
     stockList.forEach(r => {
       const o = document.createElement('option');
       o.value = r['모델명'];
-      o.textContent = `${r['모델명']} (현재 재고: ${Number(r['재고수량']||0)}대)`;
+      o.textContent = `${r['모델명']} (재고: ${Number(r['재고수량']||0)}대)`;
       sel.appendChild(o);
     });
+
+    // 출고 요청 탭 모델도 동시에 업데이트
+    const sel2 = document.getElementById('req-model');
+    if (sel2) {
+      sel2.innerHTML = '<option value="">-- 모델 선택 --</option>';
+      stockList.forEach(r => {
+        const o = document.createElement('option');
+        o.value = r['모델명'];
+        const qty = Number(r['재고수량'] || 0);
+        o.textContent = `${r['모델명']} (재고: ${qty}대)`;
+        if (qty === 0) o.style.color = 'var(--danger)';
+        sel2.appendChild(o);
+      });
+    }
+
     // 입고일 오늘로 초기화
     const dateEl = document.getElementById('in-date');
-    if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().split('T')[0];
-  } catch(e) {}
+    if (dateEl) dateEl.value = new Date().toISOString().split('T')[0];
+
+  } catch(e) { UI.showToast('❌ 모델 목록 로드 실패: ' + e.message); }
 }
 
 /* 최근 입고 내역 조회 */
