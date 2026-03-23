@@ -815,3 +815,7 @@ tbody tr:hover td { background: var(--bg); }
 
 /* 내 계정 페이지 권한 표시 */
 #my-page-perms { margin-top: 8px; }
+
+/* 물류 오버레이 */
+.lgs-overlay-hidden { display: none !important; }
+.lgs-overlay-show   { display: flex !important; }
