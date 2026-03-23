@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QMS — 운영 관리 시스템</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body style="height:100vh;overflow:hidden;display:flex;flex-direction:column;">
+
+<!-- 로딩 오버레이 -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">처리 중...</div>
+</div>
+
+<!-- ════ 헤더 ════ -->
+<div class="app-header">
+  <div class="app-logo">
+    <div class="app-logo-icon">QMS</div>
+    <div>
+      <div class="app-logo-text">운영 관리 시스템</div>
+      <div class="app-logo-sub">ISO 9001:2015</div>
+    </div>
+  </div>
+  <div class="header-spacer"></div>
+
+  <!-- 구글 시트 연동 상태 -->
+  <div class="sync-bar">
+    <div class="sync-dot" id="sync-dot"></div>
+    <span id="sync-text">구글 시트 연결됨</span>
+  </div>
+
+  <!-- 유저 정보 -->
+  <div class="header-user-pill" onclick="App.navTo('profile')" style="margin-left:16px;">
+    <div class="avatar" id="hdr-avatar"></div>
+    <div>
+      <div class="header-user-name" id="hdr-name">—</div>
+      <div class="header-user-role" id="hdr-role">—</div>
+    </div>
+  </div>
+
+  <button class="btn-logout" onclick="Auth.doLogout()">로그아웃</button>
+</div>
+
+<!-- ════ 바디 ════ -->
+<div class="app-body">
+
+  <!-- 사이드바 -->
+  <aside class="sidebar">
+    <div class="nav-section-label">메인</div>
+    <div class="nav-item active" id="nav-home" onclick="App.navTo('home')">
+      <span class="nav-icon">🏠</span> 홈 대시보드
+    </div>
+
+    <div class="nav-section-label">관리</div>
+    <div class="nav-item" id="nav-logistics" onclick="App.navTo('logistics')">
+      <span class="nav-icon">📦</span> 물류 관리
+    </div>
+    <div class="nav-item" id="nav-sales" onclick="App.navTo('sales')">
+      <span class="nav-icon">🏪</span> 영업 관리
+    </div>
+    <div class="nav-item" id="nav-machine" onclick="App.navTo('machine')">
+      <span class="nav-icon">🚚</span> 머신 출고
+    </div>
+
+    <div class="nav-section-label">시스템</div>
+    <div class="nav-item" id="nav-users" onclick="App.navTo('users')">
+      <span class="nav-icon">👥</span> 사용자 관리
+      <span class="nav-badge" id="badge-users">—</span>
+    </div>
+    <div class="nav-item" id="nav-perms" onclick="App.navTo('perms')">
+      <span class="nav-icon">🔐</span> 권한 설정
+    </div>
+    <div class="nav-item" id="nav-profile" onclick="App.navTo('profile')">
+      <span class="nav-icon">👤</span> 내 계정
+    </div>
+  </aside>
+
+  <!-- 메인 콘텐츠 -->
+  <div class="main-content">
+
+    <!-- ── 홈 ── -->
+    <div class="page-view active" id="view-home">
+      <div class="page-hd">
+        <div class="page-hd-text">
+          <div class="page-title">홈 대시보드</div>
+          <div class="page-sub">전국 현황 및 알림 — 추후 개발 예정</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body" style="text-align:center;padding:60px 20px;">
+          <div style="font-size:48px;margin-bottom:14px;">📊</div>
+          <div style="font-size:15px;font-weight:600;margin-bottom:6px;">홈 대시보드</div>
+          <div style="font-size:13px;color:var(--text3);">
+            기기 현황, 업체 상태, 오류 알림 등이 표시될 예정입니다.<br>
+            현재는 로그인·권한 관리 시스템이 구현되어 있습니다.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 물류 관리 (placeholder) ── -->
+    <div class="page-view" id="view-logistics">
+      <div class="page-hd"><div class="page-hd-text">
+        <div class="page-title">물류 관리</div>
+        <div class="page-sub">입고 / 출고 / 재고 관리</div>
+      </div></div>
+      <div class="card"><div class="card-body" style="text-align:center;padding:60px 20px;">
+        <div style="font-size:48px;margin-bottom:14px;">📦</div>
+        <div style="font-size:14px;font-weight:600;margin-bottom:6px;">물류 관리 페이지</div>
+        <div style="font-size:13px;color:var(--text3);">다음 단계에서 개발 예정입니다.</div>
+      </div></div>
+    </div>
+
+    <!-- ── 영업 관리 (placeholder) ── -->
+    <div class="page-view" id="view-sales">
+      <div class="page-hd"><div class="page-hd-text">
+        <div class="page-title">영업 관리</div>
+        <div class="page-sub">MID 관리 · 업체 관리</div>
+      </div></div>
+      <div class="card"><div class="card-body" style="text-align:center;padding:60px 20px;">
+        <div style="font-size:48px;margin-bottom:14px;">🏪</div>
+        <div style="font-size:14px;font-weight:600;margin-bottom:6px;">영업 관리 페이지</div>
+        <div style="font-size:13px;color:var(--text3);">다음 단계에서 개발 예정입니다.</div>
+      </div></div>
+    </div>
+
+    <!-- ── 머신 출고 (placeholder) ── -->
+    <div class="page-view" id="view-machine">
+      <div class="page-hd"><div class="page-hd-text">
+        <div class="page-title">머신 출고 관리</div>
+        <div class="page-sub">영업 → 조립센터 출고 요청</div>
+      </div></div>
+      <div class="card"><div class="card-body" style="text-align:center;padding:60px 20px;">
+        <div style="font-size:48px;margin-bottom:14px;">🚚</div>
+        <div style="font-size:14px;font-weight:600;margin-bottom:6px;">머신 출고 관리 페이지</div>
+        <div style="font-size:13px;color:var(--text3);">다음 단계에서 개발 예정입니다.</div>
+      </div></div>
+    </div>
+
+    <!-- ── 사용자 관리 ── -->
+    <div class="page-view" id="view-users">
+      <div class="page-hd">
+        <div class="page-hd-text">
+          <div class="page-title">사용자 관리</div>
+          <div class="page-sub">구글 시트 연동 · 직원 계정 생성·수정·삭제</div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="Users.load()" style="margin-right:6px;">🔄 새로고침</button>
+        <button class="btn btn-primary" onclick="Users.openAdd()">＋ 새 사용자 추가</button>
+      </div>
+
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input class="search-input" placeholder="이름 또는 아이디 검색..."
+                 oninput="Users.onSearch(this.value)">
+        </div>
+        <select class="filter-select" onchange="Users.onRoleFilter(this.value)">
+          <option value="">전체 역할</option>
+          <option value="admin">관리자</option>
+          <option value="manager">매니저</option>
+          <option value="staff">직원</option>
+          <option value="viewer">열람자</option>
+        </select>
+        <select class="filter-select" onchange="Users.onDeptFilter(this.value)">
+          <option value="">전체 부서</option>
+          <option value="경영">경영</option>
+          <option value="영업">영업</option>
+          <option value="운영">운영</option>
+          <option value="물류">물류</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>사용자</th><th>아이디</th><th>직급</th><th>부서</th>
+              <th>역할</th><th>상태</th><th>최근 로그인</th><th>관리</th>
+            </tr>
+          </thead>
+          <tbody id="user-table-body">
+            <tr><td colspan="8" style="text-align:center;color:var(--text3);padding:30px;">
+              데이터를 불러오는 중...
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── 권한 설정 ── -->
+    <div class="page-view" id="view-perms">
+      <div class="page-hd">
+        <div class="page-hd-text">
+          <div class="page-title">권한 설정</div>
+          <div class="page-sub">역할별 페이지 접근 권한 설정</div>
+        </div>
+        <button class="btn btn-primary" onclick="Perms.save()">💾 저장</button>
+      </div>
+
+      <div class="tab-nav">
+        <button class="tab-btn active" onclick="Perms.switchTab('matrix',this)">권한 매트릭스</button>
+        <button class="tab-btn" onclick="Perms.switchTab('roles',this)">역할 설명</button>
+      </div>
+
+      <div class="tab-pane active" id="perm-tab-matrix">
+        <div class="perm-grid" id="perm-matrix"></div>
+      </div>
+
+      <div class="tab-pane" id="perm-tab-roles">
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
+          <div class="card">
+            <div class="card-header">
+              <div class="avatar av-admin" style="width:28px;height:28px;font-size:11px;">A</div>
+              <div class="card-title" style="margin-left:8px;">관리자 (Admin)</div>
+            </div>
+            <div class="card-body" style="font-size:12px;color:var(--text2);line-height:1.7;">
+              시스템 전체 접근 권한. 사용자 계정 생성·수정·삭제, 권한 설정 변경 가능. 모든 페이지 열람 및 수정 가능.
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="avatar av-staff" style="width:28px;height:28px;font-size:11px;">U</div>
+              <div class="card-title" style="margin-left:8px;">사용자 (User)</div>
+            </div>
+            <div class="card-body" style="font-size:12px;color:var(--text2);line-height:1.7;">
+              홈 대시보드 기본 접근. 물류·영업·머신 페이지는 관리자가 개인별로 권한 부여. 사용자 관리·권한 설정 접근 불가.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <!-- ── 내 계정 ── -->
+    <div class="page-view" id="view-profile">
+      <div class="page-hd">
+        <div class="page-hd-text">
+          <div class="page-title">내 계정</div>
+          <div class="page-sub">개인 정보 및 비밀번호 변경</div>
+        </div>
+      </div>
+      <div class="card" style="max-width:520px;">
+        <div class="card-header">
+          <div class="avatar" id="profile-avatar" style="width:36px;height:36px;font-size:14px;"></div>
+          <div style="margin-left:10px;">
+            <div class="card-title" id="profile-name-display">—</div>
+            <div style="font-size:11px;color:var(--text3);" id="profile-role-display">—</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="field-row" style="margin-bottom:14px;">
+            <div class="field">
+              <div class="field-label">이름</div>
+              <div style="font-size:13px;font-weight:600;" id="p-name">—</div>
+            </div>
+            <div class="field">
+              <div class="field-label">아이디</div>
+              <div style="font-size:13px;font-family:monospace;" id="p-id">—</div>
+            </div>
+          </div>
+          <div class="field-row" style="margin-bottom:14px;">
+            <div class="field">
+              <div class="field-label">직급</div>
+              <div style="font-size:13px;" id="p-rank">—</div>
+            </div>
+            <div class="field">
+              <div class="field-label">부서</div>
+              <div style="font-size:13px;" id="p-dept">—</div>
+            </div>
+          </div>
+          <hr style="border:none;border-top:1px solid var(--border);margin:18px 0;">
+          <div style="font-size:13px;font-weight:700;margin-bottom:14px;">비밀번호 변경</div>
+          <div class="field">
+            <label class="field-label">현재 비밀번호</label>
+            <div class="pw-wrap">
+              <input class="field-input" type="password" id="pw-cur" placeholder="현재 비밀번호">
+              <button class="pw-eye" onclick="UI.togglePw('pw-cur',this)" type="button">👁</button>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">새 비밀번호</label>
+            <div class="pw-wrap">
+              <input class="field-input" type="password" id="pw-new"
+                     placeholder="8자 이상, 영문+숫자 조합"
+                     oninput="UI.checkStrength(this.value,'strength-fill','strength-text')">
+              <button class="pw-eye" onclick="UI.togglePw('pw-new',this)" type="button">👁</button>
+            </div>
+            <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+            <div class="field-hint" id="strength-text">비밀번호를 입력하면 강도가 표시됩니다</div>
+          </div>
+          <div class="field">
+            <label class="field-label">새 비밀번호 확인</label>
+            <div class="pw-wrap">
+              <input class="field-input" type="password" id="pw-confirm" placeholder="비밀번호 재입력">
+              <button class="pw-eye" onclick="UI.togglePw('pw-confirm',this)" type="button">👁</button>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="App.changePassword()">비밀번호 변경</button>
+
+            <hr style="border:none;border-top:1px solid var(--border);margin:18px 0;">
+            <div style="font-size:13px;font-weight:700;margin-bottom:8px;">내 페이지 접근 권한</div>
+            <div id="my-page-perms"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+</div><!-- /app-body -->
+
+<!-- ════ 사용자 추가/수정 모달 ════ -->
+<div class="modal-overlay" id="user-modal">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title" id="user-modal-title">새 사용자 추가</div>
+      <button class="modal-close" onclick="UI.closeModal('user-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">이름 <span class="field-required">*</span></label>
+          <input class="field-input" id="f-name" placeholder="홍길동">
+        </div>
+        <div class="field">
+          <label class="field-label">아이디 <span class="field-required">*</span></label>
+          <input class="field-input" id="f-id" placeholder="영문+숫자, 4자 이상">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">직급</label>
+          <select class="field-input" id="f-rank">
+            <option>사원</option><option>주임</option><option>대리</option>
+            <option>과장</option><option>차장</option><option>부장</option>
+            <option>이사</option><option>대표</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">부서</label>
+          <select class="field-input" id="f-dept">
+            <option>경영</option><option>영업</option><option>운영</option><option>물류</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">시스템 역할 <span class="field-required">*</span></label>
+        <div class="role-cards-grid" id="role-select-cards" style="grid-template-columns:1fr 1fr;">
+          <div class="role-card" onclick="Users.selectRole('admin',this)">
+            <div class="role-card-name">👑 관리자</div>
+            <div class="role-card-desc">전체 접근·사용자 관리·권한 설정</div>
+          </div>
+          <div class="role-card" onclick="Users.selectRole('user',this)">
+            <div class="role-card-name">🙋 사용자</div>
+            <div class="role-card-desc">페이지별 개인 권한 적용</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 신규 추가 시 비밀번호 -->
+      <div id="pw-fields">
+        <div class="field">
+          <label class="field-label">비밀번호 <span class="field-required">*</span></label>
+          <div class="pw-wrap">
+            <input class="field-input" type="password" id="f-pw"
+                   placeholder="6자 이상"
+                   oninput="Users.checkStrength(this.value,'strength-fill2')">
+            <button class="pw-eye" onclick="UI.togglePw('f-pw',this)" type="button">👁</button>
+          </div>
+          <div class="strength-bar"><div class="strength-fill" id="strength-fill2"></div></div>
+        </div>
+        <div class="field">
+          <label class="field-label">비밀번호 확인 <span class="field-required">*</span></label>
+          <div class="pw-wrap">
+            <input class="field-input" type="password" id="f-pw2" placeholder="비밀번호 재입력">
+            <button class="pw-eye" onclick="UI.togglePw('f-pw2',this)" type="button">👁</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 수정 시 비밀번호 초기화 -->
+      <div id="reset-pw-section" style="display:none;">
+        <div class="pw-section">⚠ 비밀번호를 변경하려면 아래에 입력하세요. 비워두면 기존 비밀번호가 유지됩니다.</div>
+        <div class="field">
+          <label class="field-label">새 비밀번호 (선택)</label>
+          <div class="pw-wrap">
+            <input class="field-input" type="password" id="f-pw-reset" placeholder="변경 시에만 입력">
+            <button class="pw-eye" onclick="UI.togglePw('f-pw-reset',this)" type="button">👁</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 페이지별 개인 권한 설정 ── -->
+      <div class="field">
+        <label class="field-label">페이지별 접근 권한
+          <span style="font-weight:400;color:var(--text3);margin-left:6px;">· 역할 따름 선택 시 역할 기본 권한 적용</span>
+        </label>
+        <div id="user-perm-panel" class="user-perm-panel"></div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">계정 상태</label>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
+          <button class="check-toggle on" id="status-toggle"
+                  onclick="Users.toggleStatus(this)"></button>
+          <span id="status-label" style="font-size:13px;color:var(--text2);">활성</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="UI.closeModal('user-modal')">취소</button>
+      <button class="btn btn-primary" onclick="Users.save()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ 삭제 확인 모달 ════ -->
+<div class="modal-overlay" id="del-modal">
+  <div class="modal" style="width:380px;">
+    <div class="modal-hd">
+      <div class="modal-title">사용자 삭제</div>
+      <button class="modal-close" onclick="UI.closeModal('del-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:13px;color:var(--text2);line-height:1.7;">
+        <strong id="del-user-name">—</strong> 계정을 삭제하시겠습니까?<br>
+        삭제된 계정은 복구할 수 없습니다.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="UI.closeModal('del-modal')">취소</button>
+      <button class="btn btn-danger" onclick="Users.confirmDelete()">삭제</button>
+    </div>
+  </div>
+</div>
+
+<!-- 토스트 -->
+<div class="toast" id="toast"></div>
+
+<!-- ════ JS 로드 순서 중요 ════ -->
+<script src="js/config.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/perms.js"></script>
+<script src="js/users.js"></script>
+<script src="js/app.js"></script>
+<script>
+  /* 앱 시작 */
+  window.addEventListener('DOMContentLoaded', () => App.init());
+</script>
+</body>
+</html>
