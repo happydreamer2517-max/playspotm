@@ -59,10 +59,17 @@ const App = {
     }
 
     document.getElementById('view-denied-tmp')?.remove();
-    // 물류 로딩 오버레이 혹시 남아있으면 숨김
-    lgsHideOv();
+
+    // 오버레이 강제 숨김 (물류 페이지 이탈 시)
+    const ov = document.getElementById('lgs-ov');
+    if (ov) { ov.classList.remove('lgs-overlay-show'); ov.classList.add('lgs-overlay-hidden'); ov.style.display = 'none'; }
+
     document.querySelectorAll('.page-view').forEach(v => v.classList.remove('active'));
-    document.getElementById('view-' + page)?.classList.add('active');
+    const activeView = document.getElementById('view-' + page);
+    if (activeView) {
+      activeView.classList.add('active');
+      activeView.style.removeProperty('display'); // 혹시 남은 인라인 display 제거
+    }
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.getElementById('nav-' + page)?.classList.add('active');
 
@@ -88,21 +95,42 @@ const App = {
   },
 
   renderProfile() {
-    const user = Auth.currentUser;
-    if (!user) return;
-    const av = document.getElementById('profile-avatar');
-    av.textContent   = (user.name || '?')[0];
-    av.className     = 'avatar ' + (ROLES[user.role]?.avCls || '');
-    av.style.cssText = 'width:36px;height:36px;font-size:14px;';
-    document.getElementById('profile-name-display').textContent = user.name;
-    document.getElementById('profile-role-display').textContent = `${user.dept} · ${ROLES[user.role]?.label || user.role}`;
-    document.getElementById('p-name').textContent  = user.name;
-    document.getElementById('p-id').textContent    = user.userId;
-    document.getElementById('p-rank').textContent  = user.rank;
-    document.getElementById('p-dept').textContent  = user.dept;
+    try {
+      // 오버레이 강제 숨김
+      lgsHideOv();
 
-    // 내 페이지 접근 권한 표시
-    this.renderMyPerms(user);
+      const user = Auth.currentUser || Auth.getSession();
+      if (!user) {
+        console.warn('[renderProfile] currentUser 없음 - 세션 확인');
+        return;
+      }
+
+      // currentUser 동기화
+      Auth.currentUser = user;
+
+      const setEl = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val || '—';
+      };
+
+      const av = document.getElementById('profile-avatar');
+      if (av) {
+        av.textContent   = (user.name || '?')[0];
+        av.className     = 'avatar ' + (ROLES[user.role]?.avCls || 'av-staff');
+        av.style.cssText = 'width:36px;height:36px;font-size:14px;';
+      }
+
+      setEl('profile-name-display', user.name);
+      setEl('profile-role-display', `${user.dept || ''} · ${ROLES[user.role]?.label || user.role}`);
+      setEl('p-name', user.name);
+      setEl('p-id',   user.userId);
+      setEl('p-rank', user.rank);
+      setEl('p-dept', user.dept);
+
+      this.renderMyPerms(user);
+    } catch(e) {
+      console.error('[renderProfile] 오류:', e);
+    }
   },
 
   renderMyPerms(user) {
