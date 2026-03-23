@@ -68,6 +68,7 @@ const App = {
     // 페이지별 초기화
     if (page === 'logistics') lgsInit();
     if (page === 'sales')     salesInit();
+    if (page === 'machine')   machineInit();
     if (page === 'users')     Users.load();
     if (page === 'perms')     Perms.render();
   },
