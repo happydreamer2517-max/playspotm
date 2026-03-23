@@ -695,3 +695,39 @@ tbody tr:hover td { background: var(--bg); }
   .nav-item span:not(.nav-icon) { display: none; }
   .nav-badge { display: none; }
 }
+
+/* ══════════════════════════════════
+   권한 레벨 버튼 (none / view / edit)
+══════════════════════════════════ */
+.perm-level-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+  user-select: none;
+  border: 1.5px solid transparent;
+}
+.perm-level-btn:hover { filter: brightness(.93); }
+
+.pl-none {
+  background: var(--bg2);
+  color: var(--text3);
+  border-color: var(--border2);
+}
+.pl-view {
+  background: var(--blue-lt);
+  color: var(--blue);
+  border-color: #bfdbfe;
+}
+.pl-edit {
+  background: var(--success-lt);
+  color: var(--success);
+  border-color: #6ee7b7;
+}
+.perm-level-icon { font-size: 13px; }
+.perm-level-text { font-size: 11px; }
