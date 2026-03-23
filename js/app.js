@@ -59,14 +59,23 @@ const App = {
     }
 
     document.getElementById('view-denied-tmp')?.remove();
-    document.querySelectorAll('.page-view').forEach(v => v.classList.remove('active'));
-    document.getElementById('view-' + page)?.classList.add('active');
+    document.querySelectorAll('.page-view').forEach(v => {
+      v.classList.remove('active');
+      v.style.display = 'none';
+    });
+    const activeView = document.getElementById('view-' + page);
+    if (activeView) {
+      activeView.classList.add('active');
+      // logistics는 flex로 표시 (iframe 높이 조정 때문)
+      activeView.style.display = page === 'logistics' ? 'flex' : 'block';
+    }
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.getElementById('nav-' + page)?.classList.add('active');
 
-    if (page === 'users')   Users.load();
-    if (page === 'perms')   Perms.render();
-    if (page === 'profile') this.renderProfile();
+    if (page === 'users')     Users.load();
+    if (page === 'perms')     Perms.render();
+    if (page === 'profile')   this.renderProfile();
+    if (page === 'logistics') this.initLogisticsIframe();
   },
 
   _showDenied(role) {
@@ -99,6 +108,29 @@ const App = {
 
     // 내 페이지 접근 권한 표시
     this.renderMyPerms(user);
+  },
+
+  initLogisticsIframe() {
+    const wrap  = document.getElementById('logistics-iframe-wrap');
+    const frame = document.getElementById('logistics-iframe');
+    const errEl = document.getElementById('iframe-error');
+    if (!frame) return;
+
+    // iframe 로드 실패 감지
+    frame.onerror = () => {
+      errEl.style.display = 'flex';
+      frame.style.display = 'none';
+    };
+
+    // 높이를 남은 화면에 맞게 조정
+    const setHeight = () => {
+      const top = wrap.getBoundingClientRect().top;
+      const h   = window.innerHeight - top - 24;
+      wrap.style.height  = h + 'px';
+      frame.style.height = h + 'px';
+    };
+    setHeight();
+    window.addEventListener('resize', setHeight);
   },
 
   renderMyPerms(user) {
