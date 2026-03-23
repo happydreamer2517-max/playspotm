@@ -39,8 +39,8 @@ const App = {
     Object.entries(navMap).forEach(([navId, pageKey]) => {
       const el = document.getElementById(navId);
       if (!el) return;
-      // 열람 이상이면 접근 허용
-      if (Perm.canView(user.role, pageKey)) {
+      // 개인 권한 포함해서 체크
+      if (Perm.canView(user.role, pageKey, user)) {
         el.classList.remove('nav-locked');
       } else {
         el.classList.add('nav-locked');
@@ -52,8 +52,8 @@ const App = {
     const user = Auth.currentUser;
     if (!user) return;
 
-    // 접근 권한 체크 (home, profile은 항상 허용)
-    if (!['home', 'profile'].includes(page) && !Perm.canView(user.role, page)) {
+    // home, profile은 항상 허용
+    if (!['home', 'profile'].includes(page) && !Perm.canView(user.role, page, user)) {
       this._showDenied(user.role);
       return;
     }
@@ -96,6 +96,29 @@ const App = {
     document.getElementById('p-id').textContent    = user.userId;
     document.getElementById('p-rank').textContent  = user.rank;
     document.getElementById('p-dept').textContent  = user.dept;
+
+    // 내 페이지 접근 권한 표시
+    this.renderMyPerms(user);
+  },
+
+  renderMyPerms(user) {
+    const container = document.getElementById('my-page-perms');
+    if (!container) return;
+
+    const rows = USER_PERM_PAGES.map(pg => {
+      const lv   = Perm.level(user.role, pg.key, user);
+      const meta = PERM_LABEL[lv];
+      return `
+        <div style="display:flex;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+          <span style="flex:1;color:var(--text2);">${pg.label}</span>
+          <span class="perm-level-btn ${meta.cls}" style="cursor:default;pointer-events:none;">
+            <span class="perm-level-icon">${meta.icon}</span>
+            <span class="perm-level-text">${meta.text}</span>
+          </span>
+        </div>`;
+    }).join('');
+
+    container.innerHTML = rows;
   },
 
   async changePassword() {
@@ -110,7 +133,7 @@ const App = {
     UI.showLoading('비밀번호 변경 중...');
     try {
       const user = Auth.currentUser;
-      const res  = await API.updateUser({ id: user.id, pw: nw, _curPw: cur });
+      const res  = await API.updateUser({ id: user.id, pw: nw });
       UI.hideLoading();
       if (res.success) {
         user.pw = nw;
