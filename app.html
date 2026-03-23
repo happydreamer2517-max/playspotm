@@ -61,7 +61,7 @@
       <span class="nav-icon">🏪</span> 영업 관리
     </div>
     <div class="nav-item" id="nav-machine" onclick="App.navTo('machine')">
-      <span class="nav-icon">🚚</span> 머신 출고
+      <span class="nav-icon">🚚</span> 머신 입/출고
     </div>
 
     <div class="nav-section-label">시스템</div>
@@ -497,8 +497,8 @@
       <!-- 헤더 -->
       <div class="page-hd">
         <div class="page-hd-text">
-          <div class="page-title">🚚 머신 출고 관리</div>
-          <div class="page-sub">영업팀 출고 요청 → 조립센터 승인/출고</div>
+          <div class="page-title">🚚 머신 입/출고 관리</div>
+          <div class="page-sub">머신 입고 등록 · 출고 요청 · 재고 현황</div>
         </div>
       </div>
 
@@ -506,6 +506,7 @@
       <div class="sales-tab-nav">
         <button class="machine-tab-btn active" data-tab="request" onclick="machineTab('request')">📋 출고 현황</button>
         <button class="machine-tab-btn"        data-tab="new"     onclick="machineTab('new')">➕ 출고 요청</button>
+        <button class="machine-tab-btn"        data-tab="incoming" onclick="machineTab('incoming')">📥 입고 등록</button>
         <button class="machine-tab-btn"        data-tab="stock"   onclick="machineTab('stock')">📦 재고 현황</button>
       </div>
 
@@ -618,6 +619,75 @@
                 <button class="btn btn-secondary" onclick="machineReqClear()" style="flex:1;">초기화</button>
                 <button class="btn btn-primary"   onclick="machineSubmitReq()" style="flex:2;padding:10px;">🚚 출고 요청 등록</button>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ── 입고 등록 ── -->
+      <div class="machine-tab-pane" id="machine-pane-incoming" style="display:none;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+
+          <!-- 입고 등록 폼 -->
+          <div class="card">
+            <div class="card-header">
+              <div style="font-size:16px;margin-right:8px;">📥</div>
+              <div class="card-title">머신 입고 등록</div>
+            </div>
+            <div class="card-body">
+              <div class="field">
+                <label class="field-label">입고일자 <span class="field-required">*</span></label>
+                <input id="in-date" class="field-input" type="date">
+              </div>
+              <div class="field">
+                <label class="field-label">모델명 <span class="field-required">*</span></label>
+                <select id="in-model" class="field-input">
+                  <option value="">-- 모델 선택 --</option>
+                </select>
+              </div>
+              <div class="field-row">
+                <div class="field">
+                  <label class="field-label">입고 수량 <span class="field-required">*</span></label>
+                  <input id="in-qty" class="field-input" type="number" value="1" min="1">
+                </div>
+                <div class="field">
+                  <label class="field-label">단가</label>
+                  <input id="in-price" class="field-input" type="number" value="0" min="0">
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label">공급업체</label>
+                <input id="in-vendor" class="field-input" placeholder="공급업체명">
+              </div>
+              <div class="field">
+                <label class="field-label">비고</label>
+                <input id="in-note" class="field-input" placeholder="입고 관련 메모">
+              </div>
+              <div style="background:var(--blue-lt);border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--blue);margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+                <span>ℹ️</span>
+                <span>입고 저장 시 해당 모델의 재고가 자동으로 증가합니다.</span>
+              </div>
+              <div style="display:flex;gap:10px;">
+                <button class="btn btn-secondary" onclick="machineInClear()" style="flex:1;">초기화</button>
+                <button class="btn btn-primary"   onclick="machineSubmitIn()" style="flex:2;padding:10px;">📥 입고 등록</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 최근 입고 내역 -->
+          <div>
+            <div style="display:flex;align-items:center;margin-bottom:12px;">
+              <span style="font-size:13px;font-weight:700;color:var(--text2);">최근 입고 내역</span>
+              <button class="btn btn-secondary btn-sm" onclick="machineLoadIncoming()" style="margin-left:auto;">↺ 새로고침</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>입고일</th><th>모델명</th><th>수량</th><th>단가</th><th>공급업체</th><th>등록자</th></tr></thead>
+                <tbody id="incoming-tb">
+                  <tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text3);">불러오는 중...</td></tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
