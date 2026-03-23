@@ -7,25 +7,24 @@ const App = {
   init() {
     const user = Auth.requireAuth();
     if (!user) return;
-
     this.renderHeader(user);
     this.applyNavPerms(user);
     UI.updateBadge('badge-users', '...');
     this.navTo('home');
-
     document.querySelectorAll('.modal-overlay').forEach(ov => {
-      ov.addEventListener('click', e => {
-        if (e.target === ov) ov.classList.remove('open');
-      });
+      ov.addEventListener('click', e => { if (e.target === ov) ov.classList.remove('open'); });
     });
   },
 
   renderHeader(user) {
     const av = document.getElementById('hdr-avatar');
+    if (!av) return;
     av.textContent = (user.name || '?')[0];
-    av.className   = 'avatar ' + (ROLES[user.role]?.avCls || '');
-    document.getElementById('hdr-name').textContent = `${user.name} ${user.rank}`;
-    document.getElementById('hdr-role').textContent = `${user.dept} · ${ROLES[user.role]?.label || user.role}`;
+    av.className   = 'avatar ' + (ROLES[user.role]?.avCls || 'av-staff');
+    const nm = document.getElementById('hdr-name');
+    const rl = document.getElementById('hdr-role');
+    if (nm) nm.textContent = `${user.name} ${user.rank}`;
+    if (rl) rl.textContent = `${user.dept} · ${ROLES[user.role]?.label || user.role}`;
   },
 
   applyNavPerms(user) {
@@ -39,12 +38,8 @@ const App = {
     Object.entries(navMap).forEach(([navId, pageKey]) => {
       const el = document.getElementById(navId);
       if (!el) return;
-      // 개인 권한 포함해서 체크
-      if (Perm.canView(user.role, pageKey, user)) {
-        el.classList.remove('nav-locked');
-      } else {
-        el.classList.add('nav-locked');
-      }
+      if (Perm.canView(user.role, pageKey, user)) el.classList.remove('nav-locked');
+      else el.classList.add('nav-locked');
     });
   },
 
@@ -52,32 +47,37 @@ const App = {
     const user = Auth.currentUser;
     if (!user) return;
 
-    // home, profile은 항상 허용
-    if (!['home', 'profile'].includes(page) && !Perm.canView(user.role, page, user)) {
+    // 접근 권한 체크
+    if (!['home','profile'].includes(page) && !Perm.canView(user.role, page, user)) {
       this._showDenied(user.role);
       return;
     }
 
+    // 물류 오버레이 강제 숨김
+    hideLgsOv();
+
+    // 기존 denied 뷰 제거
     document.getElementById('view-denied-tmp')?.remove();
 
-    // 오버레이 강제 숨김 (물류 페이지 이탈 시)
-    const ov = document.getElementById('lgs-ov');
-    if (ov) { ov.classList.remove('lgs-overlay-show'); ov.classList.add('lgs-overlay-hidden'); ov.style.display = 'none'; }
+    // 모든 페이지 숨기기
+    document.querySelectorAll('.page-view').forEach(v => {
+      v.classList.remove('active');
+    });
 
-    document.querySelectorAll('.page-view').forEach(v => v.classList.remove('active'));
-    const activeView = document.getElementById('view-' + page);
-    if (activeView) {
-      activeView.classList.add('active');
-      activeView.style.removeProperty('display'); // 혹시 남은 인라인 display 제거
-    }
+    // 선택 페이지 표시
+    const view = document.getElementById('view-' + page);
+    if (view) view.classList.add('active');
+
+    // 네비 활성
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.getElementById('nav-' + page)?.classList.add('active');
+    const nav = document.getElementById('nav-' + page);
+    if (nav) nav.classList.add('active');
 
+    // 페이지별 초기화
     if (page === 'logistics') lgsInit();
     if (page === 'users')     Users.load();
     if (page === 'perms')     Perms.render();
-    if (page === 'profile')   this.renderProfile();
-
+    if (page === 'profile')   App.renderProfile();
   },
 
   _showDenied(role) {
@@ -95,49 +95,36 @@ const App = {
   },
 
   renderProfile() {
-    try {
-      // 오버레이 강제 숨김
-      lgsHideOv();
+    const user = Auth.currentUser || Auth.getSession();
+    if (!user) return;
+    Auth.currentUser = user;
 
-      const user = Auth.currentUser || Auth.getSession();
-      if (!user) {
-        console.warn('[renderProfile] currentUser 없음 - 세션 확인');
-        return;
-      }
+    const set = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = val || '—';
+    };
 
-      // currentUser 동기화
-      Auth.currentUser = user;
-
-      const setEl = (id, val) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = val || '—';
-      };
-
-      const av = document.getElementById('profile-avatar');
-      if (av) {
-        av.textContent   = (user.name || '?')[0];
-        av.className     = 'avatar ' + (ROLES[user.role]?.avCls || 'av-staff');
-        av.style.cssText = 'width:36px;height:36px;font-size:14px;';
-      }
-
-      setEl('profile-name-display', user.name);
-      setEl('profile-role-display', `${user.dept || ''} · ${ROLES[user.role]?.label || user.role}`);
-      setEl('p-name', user.name);
-      setEl('p-id',   user.userId);
-      setEl('p-rank', user.rank);
-      setEl('p-dept', user.dept);
-
-      this.renderMyPerms(user);
-    } catch(e) {
-      console.error('[renderProfile] 오류:', e);
+    const av = document.getElementById('profile-avatar');
+    if (av) {
+      av.textContent   = (user.name || '?')[0];
+      av.className     = 'avatar ' + (ROLES[user.role]?.avCls || 'av-staff');
+      av.style.cssText = 'width:36px;height:36px;font-size:14px;';
     }
+
+    set('profile-name-display', user.name);
+    set('profile-role-display', `${user.dept} · ${ROLES[user.role]?.label || user.role}`);
+    set('p-name',  user.name);
+    set('p-id',    user.userId);
+    set('p-rank',  user.rank);
+    set('p-dept',  user.dept);
+
+    App.renderMyPerms(user);
   },
 
   renderMyPerms(user) {
     const container = document.getElementById('my-page-perms');
     if (!container) return;
-
-    const rows = USER_PERM_PAGES.map(pg => {
+    container.innerHTML = USER_PERM_PAGES.map(pg => {
       const lv   = Perm.level(user.role, pg.key, user);
       const meta = PERM_LABEL[lv];
       return `
@@ -149,19 +136,15 @@ const App = {
           </span>
         </div>`;
     }).join('');
-
-    container.innerHTML = rows;
   },
 
   async changePassword() {
     const cur = document.getElementById('pw-cur').value;
     const nw  = document.getElementById('pw-new').value;
     const cfm = document.getElementById('pw-confirm').value;
-
     if (!cur || !nw || !cfm) { UI.showToast('모든 항목을 입력하세요.'); return; }
     if (nw.length < 6)        { UI.showToast('새 비밀번호는 6자 이상이어야 합니다.'); return; }
     if (nw !== cfm)           { UI.showToast('새 비밀번호가 일치하지 않습니다.'); return; }
-
     UI.showLoading('비밀번호 변경 중...');
     try {
       const user = Auth.currentUser;
@@ -173,18 +156,18 @@ const App = {
         document.getElementById('pw-cur').value     = '';
         document.getElementById('pw-new').value     = '';
         document.getElementById('pw-confirm').value = '';
-        document.getElementById('strength-fill').style.width = '0%';
+        const sf = document.getElementById('strength-fill');
+        if (sf) sf.style.width = '0%';
         UI.showToast('✅ 비밀번호가 변경되었습니다.');
       } else {
         UI.showToast('❌ ' + (res.message || '변경 실패'));
       }
-    } catch (e) {
+    } catch(e) {
       UI.hideLoading();
       UI.showToast('❌ 오류가 발생했습니다.');
     }
   },
 };
-
 
 /* ══════════════════════════════════
    물류 관리 (CapsuleToy ERP 통합)
@@ -192,10 +175,20 @@ const App = {
 const LGS_API = 'https://script.google.com/macros/s/AKfycbxiZwS7NEmfS0ImoSZr8WFvA6Tnfcu9L4mIupa77h-elQPaBYIdFrZSMGcWV86wLguv/exec';
 const LGS_WHS = ['기초창고','B2B창고','반품회수창고','폐기창고','Rework','스마트스토어창고','장기재고창고'];
 
-let lgsSD = [], lgsSEL = null, lgsRepData = [], lgsInData = [];
-let lgsMaster = { vendors:[], pNos:[] };
+let lgsSD = [], lgsSEL = null, lgsRepData = [], lgsInData = [], lgsMaster = {};
+let lgsInitDone = false;
 
-/* JSONP 호출 */
+function showLgsOv(t) {
+  const el = document.getElementById('lgs-ov');
+  const tx = document.getElementById('lgs-ov-txt');
+  if (el) { el.classList.remove('lgs-overlay-hidden'); el.classList.add('lgs-overlay-show'); }
+  if (tx && t) tx.textContent = t;
+}
+function hideLgsOv() {
+  const el = document.getElementById('lgs-ov');
+  if (el) { el.classList.remove('lgs-overlay-show'); el.classList.add('lgs-overlay-hidden'); }
+}
+
 function lgsApi(action, params = {}) {
   return new Promise((resolve, reject) => {
     const cb = '_lgs_' + Date.now() + '_' + Math.random().toString(36).slice(2);
@@ -207,12 +200,10 @@ function lgsApi(action, params = {}) {
     window[cb] = (data) => {
       clearTimeout(timer);
       delete window[cb];
-      document.getElementById('_lgs_s_'+cb)?.remove();
       if (data.error) reject(new Error(data.error));
       else resolve(data.data ?? data);
     };
     const s = document.createElement('script');
-    s.id = '_lgs_s_' + cb;
     s.src = url.toString();
     s.onerror = () => { clearTimeout(timer); delete window[cb]; s.remove(); reject(new Error('Network error')); };
     s.onload = () => s.remove();
@@ -220,19 +211,6 @@ function lgsApi(action, params = {}) {
   });
 }
 
-/* 로딩 */
-function lgsShowOv(t='처리 중...') {
-  const el = document.getElementById('lgs-ov');
-  const tx = document.getElementById('lgs-ov-txt');
-  if (el) { el.classList.remove('lgs-overlay-hidden'); el.classList.add('lgs-overlay-show'); }
-  if (tx) tx.textContent = t;
-}
-function lgsHideOv() {
-  const el = document.getElementById('lgs-ov');
-  if (el) { el.classList.remove('lgs-overlay-show'); el.classList.add('lgs-overlay-hidden'); }
-}
-
-/* fmt */
 const lgsFmt = n => (Number(n)||0).toLocaleString();
 function lgsFmtLot(s) {
   if (!s) return '';
@@ -240,38 +218,23 @@ function lgsFmtLot(s) {
   return p.length === 3 ? p[0].slice(-2)+'.'+p[1]+'.'+p[2] : s;
 }
 
-/* 페이지 전환 */
-function lgsGo(p) {
-  document.querySelectorAll('.lgs-pg').forEach(e => e.style.display = 'none');
-  const el = document.getElementById('lgs-p-' + p);
-  if (el) el.style.display = 'block';
-  // 페이지별 데이터 로드
-  if (p === 'dash')  lgsLoadDash();
-  if (p === 'stock') lgsLoadStock();
-  if (p === 'in')    lgsLoadTodayIn();
-  if (p === 'out')   lgsLoadActStock('out');
-  if (p === 'tr')    lgsLoadActStock('tr');
-  if (p === 'ret')   lgsLoadActStock('ret');
-  if (p === 'rep')   lgsLoadRep();
-}
-
-/* 물류 페이지 진입 시 초기화 */
 async function lgsInit() {
-  // 창고 select 초기화
-  ['li-wh','lt-wh','lr-wh'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el || el.options.length > 0) return;
-    LGS_WHS.forEach(w => { const o = document.createElement('option'); o.value = o.textContent = w; el.appendChild(o); });
-  });
-  // 날짜 초기화
-  const today = new Date().toISOString().split('T')[0];
-  ['li-dt','lo-lot','lt-lot','lr-lot','lh-st','lh-en'].forEach(id => {
-    const el = document.getElementById(id); if (el && !el.value) el.value = today;
-  });
-  // 마스터 데이터
-  await lgsLoadMaster();
-  // 대시보드
-  await lgsLoadDash();
+  // 창고 select 초기화 (한 번만)
+  if (!lgsInitDone) {
+    ['li-wh','lt-wh','lr-wh'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      while (el.options.length) el.remove(0);
+      LGS_WHS.forEach(w => { const o = document.createElement('option'); o.value = o.textContent = w; el.appendChild(o); });
+    });
+    const today = new Date().toISOString().split('T')[0];
+    ['li-dt','lo-lot','lt-lot','lr-lot','lh-st','lh-en'].forEach(id => {
+      const el = document.getElementById(id); if (el && !el.value) el.value = today;
+    });
+    lgsInitDone = true;
+    await lgsLoadMaster();
+  }
+  lgsGo('dash');
 }
 
 async function lgsLoadMaster() {
@@ -282,101 +245,109 @@ async function lgsLoadMaster() {
       if (!el) return;
       while (el.options.length > 1) el.remove(1);
     });
-    lgsMaster.vendors?.forEach(v => { const o = document.createElement('option'); o.value = o.textContent = v; document.getElementById('li-vd')?.appendChild(o); });
-    lgsMaster.pNos?.forEach(v => { const o = document.createElement('option'); o.value = o.textContent = v; document.getElementById('li-pn')?.appendChild(o); });
+    (lgsMaster.vendors||[]).forEach(v => { const o = document.createElement('option'); o.value = o.textContent = v; document.getElementById('li-vd')?.appendChild(o); });
+    (lgsMaster.pNos||[]).forEach(v => { const o = document.createElement('option'); o.value = o.textContent = v; document.getElementById('li-pn')?.appendChild(o); });
   } catch(e) {}
 }
 
-/* 대시보드 */
+function lgsGo(p) {
+  document.querySelectorAll('.lgs-pg').forEach(e => e.style.display = 'none');
+  const el = document.getElementById('lgs-p-' + p);
+  if (el) el.style.display = 'block';
+  if (p === 'dash')  lgsLoadDash();
+  if (p === 'stock') lgsLoadStock();
+  if (p === 'in')    lgsLoadTodayIn();
+  if (p === 'out')   lgsLoadActStock('out');
+  if (p === 'tr')    lgsLoadActStock('tr');
+  if (p === 'ret')   lgsLoadActStock('ret');
+  if (p === 'rep')   lgsLoadRep();
+}
+
 async function lgsLoadDash() {
   try {
-    lgsShowOv('대시보드 로딩 중...');
-    const today = new Date().toISOString().split('T')[0];
+    showLgsOv('대시보드 로딩 중...');
+    const today   = new Date().toISOString().split('T')[0];
     const weekAgo = new Date(Date.now() - 7*86400000).toISOString().split('T')[0];
     const [data, top20, hist] = await Promise.all([
       lgsApi('getStockListData'),
       lgsApi('getTopOutbound'),
-      lgsApi('getFilteredHistory', { start: weekAgo, end: today, type: 'all', keyword: '' })
+      lgsApi('getFilteredHistory', { start:weekAgo, end:today, type:'all', keyword:'' })
     ]);
     lgsSD = data;
 
-    document.getElementById('ld-total').textContent = lgsFmt(data.length);
-    document.getElementById('ld-wh-sub').textContent = '창고 ' + new Set(data.map(d=>d.wh)).size + '개';
+    const set = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
+    set('ld-total',   lgsFmt(data.length));
+    set('ld-wh-sub',  '창고 ' + new Set(data.map(d=>d.wh)).size + '개');
 
     const todayLot = lgsFmtLot(today);
-    const tIn  = hist.filter(r => r.date === todayLot && r.type.includes('입고') && !r.type.includes('이동'));
-    const tOut = hist.filter(r => r.date === todayLot && r.type.includes('출고') && !r.type.includes('이동'));
-    document.getElementById('ld-in-cnt').textContent  = tIn.length + '건';
-    document.getElementById('ld-in-qty').textContent  = '수량 ' + lgsFmt(tIn.reduce((s,r)=>s+(Number(r.qty)||0),0)) + '개';
-    document.getElementById('ld-out-cnt').textContent = tOut.length + '건';
-    document.getElementById('ld-out-qty').textContent = '수량 ' + lgsFmt(tOut.reduce((s,r)=>s+(Number(r.qty)||0),0)) + '개';
+    const tIn  = hist.filter(r => r.date===todayLot && r.type.includes('입고') && !r.type.includes('이동'));
+    const tOut = hist.filter(r => r.date===todayLot && r.type.includes('출고') && !r.type.includes('이동'));
+    set('ld-in-cnt',  tIn.length+'건');
+    set('ld-in-qty',  '수량 '+lgsFmt(tIn.reduce((s,r)=>s+(Number(r.qty)||0),0))+'개');
+    set('ld-out-cnt', tOut.length+'건');
+    set('ld-out-qty', '수량 '+lgsFmt(tOut.reduce((s,r)=>s+(Number(r.qty)||0),0))+'개');
 
     const nm = new Date();
     const ym = nm.getFullYear().toString().slice(-2)+'.'+String(nm.getMonth()+1).padStart(2,'0');
     const mOut = hist.filter(r => r.date?.startsWith(ym) && r.type.includes('출고') && !r.type.includes('이동'));
-    document.getElementById('ld-month-qty').textContent = lgsFmt(mOut.reduce((s,r)=>s+(Number(r.qty)||0),0));
+    set('ld-month-qty', lgsFmt(mOut.reduce((s,r)=>s+(Number(r.qty)||0),0)));
 
     // 창고별 차트
     const whMap = {};
     data.forEach(d => { whMap[d.wh] = (whMap[d.wh]||0)+1; });
     const mx = Math.max(...Object.values(whMap), 1);
-    document.getElementById('ld-wh-chart').innerHTML = Object.entries(whMap).sort((a,b)=>b[1]-a[1]).map(([w,c]) =>
+    const whEl = document.getElementById('ld-wh-chart');
+    if (whEl) whEl.innerHTML = Object.entries(whMap).sort((a,b)=>b[1]-a[1]).map(([w,c]) =>
       `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
         <div style="font-size:11px;color:var(--text2);width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${w}</div>
         <div style="flex:1;height:8px;background:var(--bg2);border-radius:2px;overflow:hidden;border:1px solid var(--border);">
           <div style="height:100%;background:var(--blue);border-radius:2px;width:${Math.round(c/mx*100)}%;"></div>
         </div>
         <div style="font-size:11px;color:var(--text3);width:22px;text-align:right;">${c}</div>
-      </div>`
-    ).join('');
+      </div>`).join('');
 
     // TOP 10
     const mx2 = Math.max(...(top20||[]).map(r=>r.qty), 1);
-    document.getElementById('ld-top10').innerHTML = top20?.slice(0,10).map((r,i) =>
+    const topEl = document.getElementById('ld-top10');
+    if (topEl) topEl.innerHTML = (top20||[]).slice(0,10).map((r,i) =>
       `<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
         <div style="width:16px;font-size:10px;font-weight:700;color:var(--text3);text-align:right;">${i+1}</div>
         <div style="font-size:11px;width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.item}</div>
         <div style="flex:1;height:10px;background:var(--bg2);border-radius:2px;overflow:hidden;">
-          <div style="height:100%;border-radius:2px;background:${i===0?'#dc2626':i===1?'#d97706':i===2?'#16a34a':'#1c5fcd'};opacity:${i<3?1:.65};width:${Math.round(r.qty/mx2*100)}%;"></div>
+          <div style="height:100%;border-radius:2px;background:${['#dc2626','#d97706','#16a34a'][i]||'#1c5fcd'};opacity:${i<3?1:.65};width:${Math.round(r.qty/mx2*100)}%;"></div>
         </div>
         <div style="font-size:10px;color:var(--text3);width:38px;text-align:right;">${lgsFmt(r.qty)}</div>
-      </div>`
-    ).join('') || '<div style="font-size:11px;color:var(--text3);padding:8px 0;">출고 데이터 없음</div>';
+      </div>`).join('') || '<div style="font-size:11px;color:var(--text3);">출고 데이터 없음</div>';
 
     // 최근 내역
-    document.getElementById('ld-recent').innerHTML = hist.slice(0,8).map(r => {
-      const bc = r.type.includes('입고') ? 'b-staff' : r.type.includes('출고') ? 'b-admin' : 'b-viewer';
-      const col = r.type.includes('입고') ? 'var(--success)' : r.type.includes('출고') ? 'var(--danger)' : 'var(--text3)';
+    const recEl = document.getElementById('ld-recent');
+    if (recEl) recEl.innerHTML = hist.slice(0,8).map(r => {
+      const cls = r.type.includes('입고') ? 'b-staff' : r.type.includes('출고') ? 'b-admin' : 'b-viewer';
       return `<div style="display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid var(--border);">
-        <span class="badge ${bc}">${r.type}</span>
+        <span class="badge ${cls}">${r.type}</span>
         <span style="font-size:12px;flex:1;">${r.item}</span>
         <span style="font-size:11px;color:var(--text3);">${lgsFmt(r.qty)}</span>
         <span style="font-size:10px;color:var(--text3);">${r.date}</span>
       </div>`;
-    }).join('') || '<div style="font-size:11px;color:var(--text3);padding:8px 0;">최근 내역 없음</div>';
+    }).join('') || '<div style="font-size:11px;color:var(--text3);">최근 내역 없음</div>';
 
-  } catch(e) {
-    UI.showToast('❌ 물류 대시보드 오류: ' + e.message);
-  } finally {
-    lgsHideOv();
-  }
+  } catch(e) { UI.showToast('❌ 물류 대시보드 오류: ' + e.message); }
+  finally { hideLgsOv(); }
 }
 
-/* 재고 조회 */
 async function lgsLoadStock() {
   try {
-    lgsShowOv('재고 로딩...');
+    showLgsOv('재고 로딩...');
     lgsSD = await lgsApi('getStockListData');
     lgsRenderStock('');
   } catch(e) { UI.showToast('❌ 재고 로드 실패'); }
-  finally { lgsHideOv(); }
+  finally { hideLgsOv(); }
 }
 function lgsRenderStock(kw) {
-  const f = lgsSD.filter(r => {
-    if (!kw) return true;
-    return (r.pNo+r.item+r.vendor+r.wh+r.date).toLowerCase().includes(kw.toLowerCase());
-  });
-  document.getElementById('lgs-s-tb').innerHTML = f.length ? f.map(r => `
+  const f = lgsSD.filter(r => !kw || (r.pNo+r.item+r.vendor+r.wh+r.date).toLowerCase().includes(kw.toLowerCase()));
+  const tb = document.getElementById('lgs-s-tb');
+  if (!tb) return;
+  tb.innerHTML = f.length ? f.map(r => `
     <tr>
       <td style="color:var(--text3);">${r.date||'-'}</td>
       <td><span style="background:var(--bg2);border:1px solid var(--border);border-radius:2px;padding:1px 5px;font-size:10px;">${r.wh}</span></td>
@@ -390,13 +361,14 @@ function lgsRenderStock(kw) {
 }
 function lgsFilterStock(v) { lgsRenderStock(v); }
 
-/* 금일 입고 내역 */
 async function lgsLoadTodayIn() {
   try {
     const t = new Date().toISOString().split('T')[0];
     const d = await lgsApi('getFilteredHistory', { start:t, end:t, type:'입고', keyword:'' });
     lgsInData = d;
-    document.getElementById('lgs-in-tb').innerHTML = d.length ? d.map(r => `
+    const tb = document.getElementById('lgs-in-tb');
+    if (!tb) return;
+    tb.innerHTML = d.length ? d.map(r => `
       <tr>
         <td style="color:var(--text3);">${r.date}</td>
         <td><span style="background:var(--bg2);border:1px solid var(--border);border-radius:2px;padding:1px 5px;font-size:10px;">${r.wh}</span></td>
@@ -410,33 +382,29 @@ async function lgsLoadTodayIn() {
   } catch(e) {}
 }
 
-/* 입고 저장 */
 async function lgsSubmitIn() {
-  const dt=document.getElementById('li-dt').value, vd=document.getElementById('li-vd').value,
-        pn=document.getElementById('li-pn').value, nm=document.getElementById('li-nm').value.trim(),
-        qt=parseFloat(document.getElementById('li-qt').value), pr=parseFloat(document.getElementById('li-pr').value)||0,
-        wh=document.getElementById('li-wh').value, nt=document.getElementById('li-nt').value.trim();
+  const dt=document.getElementById('li-dt')?.value, vd=document.getElementById('li-vd')?.value,
+        pn=document.getElementById('li-pn')?.value, nm=document.getElementById('li-nm')?.value.trim(),
+        qt=parseFloat(document.getElementById('li-qt')?.value), pr=parseFloat(document.getElementById('li-pr')?.value)||0,
+        wh=document.getElementById('li-wh')?.value, nt=document.getElementById('li-nt')?.value.trim();
   if (!dt||!pn||!nm||qt<=0) { UI.showToast('날짜, 품번, 품명, 수량을 입력하세요'); return; }
   try {
-    lgsShowOv('저장 중...');
+    showLgsOv('저장 중...');
     await lgsApi('saveRow', { type:'입고', date:lgsFmtLot(dt), vendor:vd, pNo:pn, item:nm, qty:qt, price:pr, note:nt, wh, user:Auth.currentUser?.name||'' });
     UI.showToast('✅ 입고 저장 완료!');
-    lgsClearIn();
-    lgsSD = [];
-    lgsLoadTodayIn();
-  } catch(e) { UI.showToast('❌ 실패: ' + e.message); }
-  finally { lgsHideOv(); }
+    lgsClearIn(); lgsSD = []; lgsLoadTodayIn();
+  } catch(e) { UI.showToast('❌ 실패: '+e.message); }
+  finally { hideLgsOv(); }
 }
 function lgsClearIn() {
-  ['li-qt','li-pr'].forEach(id => document.getElementById(id).value = 0);
-  document.getElementById('li-nm').value = '';
-  ['li-vd','li-pn'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  ['li-qt','li-pr'].forEach(id => { const el=document.getElementById(id); if(el) el.value=0; });
+  const nm=document.getElementById('li-nm'); if(nm) nm.value='';
+  ['li-vd','li-pn'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
 }
 
-/* 액션 공용 (출고/이동/반품) */
 async function lgsLoadActStock(p) {
   if (!lgsSD.length) {
-    try { lgsShowOv('재고 로딩...'); lgsSD = await lgsApi('getStockListData'); } catch(e) { UI.showToast('❌ 오류'); return; } finally { lgsHideOv(); }
+    try { showLgsOv('재고 로딩...'); lgsSD = await lgsApi('getStockListData'); } catch(e) { UI.showToast('❌ 오류'); return; } finally { hideLgsOv(); }
   }
   lgsRenderActTb(p);
 }
@@ -458,80 +426,69 @@ function lgsSel(item, p) {
   lgsSEL = item;
   const selId = { out:'lgs-o-sel', tr:'lgs-t-sel', ret:'lgs-r-sel' }[p];
   const el = document.getElementById(selId);
-  if (el) {
-    el.textContent = `[${item.pNo}] ${item.item}  |  현재고: ${lgsFmt(item.qty)}  |  ${item.wh}`;
-    el.style.color = 'var(--blue)'; el.style.fontWeight = '600';
-  }
+  if (el) { el.textContent=`[${item.pNo}] ${item.item}  |  현재고: ${lgsFmt(item.qty)}  |  ${item.wh}`; el.style.color='var(--blue)'; el.style.fontWeight='600'; }
 }
 
-/* 출고 */
 async function lgsSubmitOut() {
   if (!lgsSEL) { UI.showToast('품목을 먼저 선택하세요'); return; }
-  const lot=document.getElementById('lo-lot').value, qt=parseFloat(document.getElementById('lo-qt').value), nt=document.getElementById('lo-nt').value.trim();
+  const lot=document.getElementById('lo-lot')?.value, qt=parseFloat(document.getElementById('lo-qt')?.value), nt=document.getElementById('lo-nt')?.value.trim();
   if (!lot||qt<=0) { UI.showToast('날짜와 수량을 입력하세요'); return; }
-  if (qt > lgsSEL.qty) { UI.showToast('현재고보다 출고 수량이 많습니다'); return; }
-  if (!confirm(`[${lgsSEL.pNo}] ${lgsSEL.item}  ${lgsFmt(qt)}개 출고하시겠습니까?`)) return;
+  if (qt>lgsSEL.qty) { UI.showToast('현재고보다 출고 수량이 많습니다'); return; }
+  if (!confirm(`[${lgsSEL.pNo}] ${lgsSEL.item} ${lgsFmt(qt)}개 출고하시겠습니까?`)) return;
   try {
-    lgsShowOv('처리 중...');
+    showLgsOv('처리 중...');
     await lgsApi('saveRow', { type:'출고', date:lgsFmtLot(lot), vendor:lgsSEL.vendor, pNo:lgsSEL.pNo, item:lgsSEL.item, qty:qt, price:lgsSEL.price, note:nt, wh:lgsSEL.wh, user:Auth.currentUser?.name||'' });
-    UI.showToast('✅ 출고 완료!');
-    lgsSEL = null;
-    document.getElementById('lgs-o-sel').textContent = '좌측에서 품목을 선택하세요';
-    document.getElementById('lo-qt').value = 0;
-    lgsSD = [];
-  } catch(e) { UI.showToast('❌ 실패: ' + e.message); }
-  finally { lgsHideOv(); }
+    UI.showToast('✅ 출고 완료!'); lgsSEL=null; lgsSD=[];
+    const sel=document.getElementById('lgs-o-sel'); if(sel) sel.textContent='좌측에서 품목을 선택하세요';
+    const qt2=document.getElementById('lo-qt'); if(qt2) qt2.value=0;
+  } catch(e) { UI.showToast('❌ 실패: '+e.message); }
+  finally { hideLgsOv(); }
 }
 
-/* 창고 이동 */
 async function lgsSubmitTr() {
   if (!lgsSEL) { UI.showToast('품목을 먼저 선택하세요'); return; }
-  const lot=document.getElementById('lt-lot').value, qt=parseFloat(document.getElementById('lt-qt').value),
-        dw=document.getElementById('lt-wh').value, nt=document.getElementById('lt-nt').value.trim();
+  const lot=document.getElementById('lt-lot')?.value, qt=parseFloat(document.getElementById('lt-qt')?.value),
+        dw=document.getElementById('lt-wh')?.value, nt=document.getElementById('lt-nt')?.value.trim();
   if (!lot||qt<=0) { UI.showToast('날짜와 수량을 입력하세요'); return; }
-  if (dw === lgsSEL.wh) { UI.showToast('출발/목적지 창고가 같습니다'); return; }
-  if (!confirm(`[${lgsSEL.pNo}] ${lgsSEL.wh} → ${dw}  ${lgsFmt(qt)}개 이동하시겠습니까?`)) return;
+  if (dw===lgsSEL.wh) { UI.showToast('출발/목적지 창고가 같습니다'); return; }
+  if (!confirm(`[${lgsSEL.pNo}] ${lgsSEL.wh} → ${dw} ${lgsFmt(qt)}개 이동?`)) return;
   try {
-    lgsShowOv('처리 중...');
+    showLgsOv('처리 중...');
     await lgsApi('saveTransfer', { date:lgsFmtLot(lot), vendor:lgsSEL.vendor, pNo:lgsSEL.pNo, item:lgsSEL.item, qty:qt, price:lgsSEL.price, note:nt, fromWh:lgsSEL.wh, toWh:dw, user:Auth.currentUser?.name||'' });
-    UI.showToast('✅ 이동 완료!');
-    lgsSEL = null;
-    lgsSD = [];
-  } catch(e) { UI.showToast('❌ 실패: ' + e.message); }
-  finally { lgsHideOv(); }
+    UI.showToast('✅ 이동 완료!'); lgsSEL=null; lgsSD=[];
+  } catch(e) { UI.showToast('❌ 실패: '+e.message); }
+  finally { hideLgsOv(); }
 }
 
-/* 반품/회수 */
 async function lgsSubmitRet() {
   if (!lgsSEL) { UI.showToast('품목을 먼저 선택하세요'); return; }
-  const tp=document.getElementById('lr-tp').value, lot=document.getElementById('lr-lot').value,
-        qt=parseFloat(document.getElementById('lr-qt').value), wh=document.getElementById('lr-wh').value,
-        nt=document.getElementById('lr-nt').value.trim();
+  const tp=document.getElementById('lr-tp')?.value, lot=document.getElementById('lr-lot')?.value,
+        qt=parseFloat(document.getElementById('lr-qt')?.value), wh=document.getElementById('lr-wh')?.value,
+        nt=document.getElementById('lr-nt')?.value.trim();
   if (!lot||qt<=0) { UI.showToast('날짜와 수량을 입력하세요'); return; }
-  if (!confirm(`[${lgsSEL.pNo}] ${lgsSEL.item}  ${lgsFmt(qt)}개 ${tp}하시겠습니까?`)) return;
+  if (!confirm(`[${lgsSEL.pNo}] ${lgsFmt(qt)}개 ${tp}?`)) return;
   try {
-    lgsShowOv('저장 중...');
+    showLgsOv('저장 중...');
     await lgsApi('saveRow', { type:tp, date:lgsFmtLot(lot), vendor:lgsSEL.vendor, pNo:lgsSEL.pNo, item:lgsSEL.item, qty:qt, price:lgsSEL.price, note:nt, wh, user:Auth.currentUser?.name||'' });
-    UI.showToast('✅ ' + tp + ' 완료!');
-    lgsSEL = null;
-    lgsSD = [];
-  } catch(e) { UI.showToast('❌ 실패: ' + e.message); }
-  finally { lgsHideOv(); }
+    UI.showToast('✅ '+tp+' 완료!'); lgsSEL=null; lgsSD=[];
+  } catch(e) { UI.showToast('❌ 실패: '+e.message); }
+  finally { hideLgsOv(); }
 }
 
-/* 수불 현황 */
 async function lgsLoadRep() {
   try {
-    lgsShowOv('집계 중...');
+    showLgsOv('집계 중...');
     const d = await lgsApi('getInventoryData');
     lgsRepData = d;
     lgsRenderRep('');
   } catch(e) { UI.showToast('❌ 수불 오류'); }
-  finally { lgsHideOv(); }
+  finally { hideLgsOv(); }
 }
 function lgsRenderRep(kw) {
   const f = lgsRepData.filter(r => !kw || (r.item+r.vendor+r.pNo+r.date+r.wh).toLowerCase().includes(kw.toLowerCase()));
-  document.getElementById('lgs-rep-tb').innerHTML = f.length ? f.map(r => `
+  const tb = document.getElementById('lgs-rep-tb');
+  if (!tb) return;
+  tb.innerHTML = f.length ? f.map(r => `
     <tr>
       <td style="color:var(--text3);">${r.date}</td>
       <td style="text-align:left;">${r.vendor}</td>
@@ -547,27 +504,28 @@ function lgsRenderRep(kw) {
 }
 function lgsFilterRep(v) { lgsRenderRep(v); }
 
-/* 히스토리 */
 async function lgsLoadHist() {
   try {
-    lgsShowOv('조회 중...');
+    showLgsOv('조회 중...');
     const d = await lgsApi('getFilteredHistory', {
-      start: document.getElementById('lh-st').value,
-      end:   document.getElementById('lh-en').value,
-      type:  document.getElementById('lh-tp').value,
-      keyword: document.getElementById('lh-kw').value
+      start:   document.getElementById('lh-st')?.value || '',
+      end:     document.getElementById('lh-en')?.value || '',
+      type:    document.getElementById('lh-tp')?.value || 'all',
+      keyword: document.getElementById('lh-kw')?.value || ''
     });
-    document.getElementById('lh-cnt').textContent = '총 ' + d.length + '건';
-    const colors = { '입고':'var(--success)', '출고':'var(--danger)', '실사조정':'var(--purple)', '반품':'var(--teal)', '회수':'#ea580c', '이동':'var(--warn)' };
-    document.getElementById('lh-list').innerHTML = d.length ? d.map(r => {
+    const cnt = document.getElementById('lh-cnt');
+    if (cnt) cnt.textContent = '총 '+d.length+'건';
+    const list = document.getElementById('lh-list');
+    if (!list) return;
+    const colors = { '입고':'var(--success)','출고':'var(--danger)','실사조정':'var(--purple)','반품':'var(--teal)','회수':'#ea580c','이동':'var(--warn)' };
+    list.innerHTML = d.length ? d.map(r => {
       let tc = '이동';
       if (r.type.includes('입고')) tc='입고'; else if (r.type.includes('출고')) tc='출고';
       else if (r.type.includes('조정')) tc='실사조정'; else if (r.type.includes('반품')) tc='반품'; else if (r.type.includes('회수')) tc='회수';
-      const col = colors[tc] || 'var(--blue)';
-      return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;border-left:4px solid ${col};box-shadow:var(--shadow);margin-bottom:7px;">
+      return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;border-left:4px solid ${colors[tc]||'var(--blue)'};box-shadow:var(--shadow);margin-bottom:7px;">
         <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:5px;">
           <span>📅 ${r.date} &nbsp;<span style="background:var(--bg2);border:1px solid var(--border);border-radius:2px;padding:1px 5px;font-size:10px;">${r.wh}</span></span>
-          <span class="badge b-staff">${r.type}</span>
+          <span>${r.type}</span>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <div><div style="font-size:13px;font-weight:600;">${r.item}</div><div style="font-size:11px;color:var(--text3);margin-top:2px;">${r.pNo} | ${r.vendor}</div></div>
@@ -579,5 +537,5 @@ async function lgsLoadHist() {
       </div>`;
     }).join('') : '<div style="text-align:center;padding:32px;font-size:12px;color:var(--text3);">조회 결과 없음</div>';
   } catch(e) { UI.showToast('❌ 히스토리 오류'); }
-  finally { lgsHideOv(); }
+  finally { hideLgsOv(); }
 }
