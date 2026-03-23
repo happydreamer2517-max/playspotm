@@ -59,6 +59,8 @@ const App = {
     }
 
     document.getElementById('view-denied-tmp')?.remove();
+    // 물류 로딩 오버레이 혹시 남아있으면 숨김
+    lgsHideOv();
     document.querySelectorAll('.page-view').forEach(v => v.classList.remove('active'));
     document.getElementById('view-' + page)?.classList.add('active');
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
