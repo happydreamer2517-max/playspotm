@@ -14,10 +14,8 @@ const Perms = {
   render() {
     const perms = this._get();
     const roles = [
-      { key:'admin',   label:'관리자', cls:'b-admin' },
-      { key:'manager', label:'매니저', cls:'b-manager' },
-      { key:'staff',   label:'직원',   cls:'b-staff' },
-      { key:'viewer',  label:'열람자', cls:'b-viewer' },
+      { key:'admin', label:'관리자', cls:'b-admin' },
+      { key:'user',  label:'사용자', cls:'b-staff' },
     ];
 
     let html = '';
