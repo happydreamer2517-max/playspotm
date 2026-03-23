@@ -216,39 +216,20 @@
               <div class="card-title" style="margin-left:8px;">관리자 (Admin)</div>
             </div>
             <div class="card-body" style="font-size:12px;color:var(--text2);line-height:1.7;">
-              시스템 전체 접근 권한. 사용자 계정 생성·수정·삭제, 권한 설정 변경 가능. 모든 데이터 열람 및 수정 가능.
+              시스템 전체 접근 권한. 사용자 계정 생성·수정·삭제, 권한 설정 변경 가능. 모든 페이지 열람 및 수정 가능.
             </div>
           </div>
           <div class="card">
             <div class="card-header">
-              <div class="avatar av-manager" style="width:28px;height:28px;font-size:11px;">M</div>
-              <div class="card-title" style="margin-left:8px;">매니저 (Manager)</div>
+              <div class="avatar av-staff" style="width:28px;height:28px;font-size:11px;">U</div>
+              <div class="card-title" style="margin-left:8px;">사용자 (User)</div>
             </div>
             <div class="card-body" style="font-size:12px;color:var(--text2);line-height:1.7;">
-              부서 내 데이터 관리 권한. 영업·물류·머신 관리 가능. 사용자 관리 및 권한 설정은 불가.
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-header">
-              <div class="avatar av-staff" style="width:28px;height:28px;font-size:11px;">S</div>
-              <div class="card-title" style="margin-left:8px;">직원 (Staff)</div>
-            </div>
-            <div class="card-body" style="font-size:12px;color:var(--text2);line-height:1.7;">
-              담당 업무 데이터 입력 및 조회 가능. 삭제 및 타 부서 데이터 수정 불가.
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-header">
-              <div class="avatar av-viewer" style="width:28px;height:28px;font-size:11px;">V</div>
-              <div class="card-title" style="margin-left:8px;">열람자 (Viewer)</div>
-            </div>
-            <div class="card-body" style="font-size:12px;color:var(--text2);line-height:1.7;">
-              데이터 조회만 가능. 입력·수정·삭제 불가. 보고서 출력 가능.
+              홈 대시보드 기본 접근. 물류·영업·머신 페이지는 관리자가 개인별로 권한 부여. 사용자 관리·권한 설정 접근 불가.
             </div>
           </div>
         </div>
       </div>
-    </div>
 
     <!-- ── 내 계정 ── -->
     <div class="page-view" id="view-profile">
@@ -363,22 +344,14 @@
 
       <div class="field">
         <label class="field-label">시스템 역할 <span class="field-required">*</span></label>
-        <div class="role-cards-grid" id="role-select-cards">
+        <div class="role-cards-grid" id="role-select-cards" style="grid-template-columns:1fr 1fr;">
           <div class="role-card" onclick="Users.selectRole('admin',this)">
             <div class="role-card-name">👑 관리자</div>
-            <div class="role-card-desc">전체 접근·사용자 관리</div>
+            <div class="role-card-desc">전체 접근·사용자 관리·권한 설정</div>
           </div>
-          <div class="role-card" onclick="Users.selectRole('manager',this)">
-            <div class="role-card-name">💼 매니저</div>
-            <div class="role-card-desc">업무 데이터 관리</div>
-          </div>
-          <div class="role-card" onclick="Users.selectRole('staff',this)">
-            <div class="role-card-name">🙋 직원</div>
-            <div class="role-card-desc">담당 업무 입력·조회</div>
-          </div>
-          <div class="role-card" onclick="Users.selectRole('viewer',this)">
-            <div class="role-card-name">👀 열람자</div>
-            <div class="role-card-desc">조회 전용</div>
+          <div class="role-card" onclick="Users.selectRole('user',this)">
+            <div class="role-card-name">🙋 사용자</div>
+            <div class="role-card-desc">페이지별 개인 권한 적용</div>
           </div>
         </div>
       </div>
